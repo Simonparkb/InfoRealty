@@ -1,10 +1,10 @@
 from .models import ActivityLog
 import math
 import csv
-from collections import defaultdict
-from django.shortcuts import render
 import os
 import json
+from collections import defaultdict
+from django.shortcuts import render
 import pandas as pd
 import networkx as nx
 from django.conf import settings
