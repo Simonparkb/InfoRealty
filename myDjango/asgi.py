@@ -1,5 +1,5 @@
 """
-ASGI config for myDjango project.
+ASGI auth for myDjango project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
