@@ -403,9 +403,19 @@ function displayArea(area) {
 
     // 다각형에 mouseover 이벤트를 등록하고 이벤트가 발생하면 폴리곤의 채움색을 변경합니다
     // 지역명을 표시하는 커스텀오버레이를 지도위에 표시합니다
-    kakao.maps.event.addListener(polygon, '
-    ', function(mouseEvent) {
+    kakao.maps.event.addListener(polygon, 'mouseover', function(mouseEvent) {
         polygon.setOptions({fillColor: '#09f'});
+<!--        var content = '<div class="info">' +-->
+<!--                      '   <div class="title">' + area.name + '</div>' +-->
+<!--                      '   <div class="size">총 면적 : 약 ' + Math.floor(polygon.getArea()) + ' m<sup>2</sup></div>' +-->
+<!--                      -->
+<!--                      '</div>';-->
+
+<!--        infowindow.setContent(content);-->
+<!--        infowindow.setPosition(mouseEvent.latLng);-->
+<!--                // 바로 페이지 이동-->
+
+<!--        infowindow.setMap(map);-->
         customOverlay.setPosition(mouseEvent.latLng);
         customOverlay.setMap(map);
     });
@@ -427,23 +437,12 @@ function displayArea(area) {
     kakao.maps.event.addListener(polygon, 'click', function(mouseEvent) {
         var lat = mouseEvent.latLng.getLat();
         var lng = mouseEvent.latLng.getLng();
-
+<!--        customOverlay.setContent('<div class="area">' + area.name + '</div>');-->
 
         var url = 'infoRealty?lat=' + lat + '&lng=' + lng;
         window.location.href = url;
-<!--        customOverlay.setContent('<div class="area">' + area.name + '</div>');-->
-<!--        // 인포윈도우에 이름과 면적 표시-->
-<!--        var content = '<div class="info">' +-->
-<!--                      '   <div class="title">' + area.name + '</div>' +-->
-<!--                      '   <div class="size">총 면적 : 약 ' + Math.floor(polygon.getArea()) + ' m<sup>2</sup></div>' +-->
-<!--                      -->
-<!--                      '</div>';-->
+        // 인포윈도우에 이름과 면적 표시
 
-<!--        infowindow.setContent(content);-->
-<!--        infowindow.setPosition(mouseEvent.latLng);-->
-<!--                // 바로 페이지 이동-->
-
-<!--        infowindow.setMap(map);-->
 
 
     });

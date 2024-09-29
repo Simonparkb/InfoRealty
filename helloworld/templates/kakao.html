@@ -95,7 +95,8 @@
         terrain : kakao.maps.MapTypeId.TERRAIN,
         traffic :  kakao.maps.MapTypeId.TRAFFIC,
         bicycle : kakao.maps.MapTypeId.BICYCLE,
-        useDistrict : kakao.maps.MapTypeId.USE_DISTRICT
+        useDistrict : kakao.maps.MapTypeId.USE_DISTRICT,
+        useROADVIEW :  kakao.maps.MapTypeId.ROADVIEW
     };
 <!--map.addOverlayMapTypeId(kakao.maps.MapTypeId.ROADVIEW);-->
     // 체크 박스를 선택하면 호출되는 함수입니다
@@ -129,7 +130,7 @@
 
         // 로드뷰 체크박스가 체크되어있으면 지도에 로드뷰정보 지도타입을 추가합니다
         if (chkUseROADVIEW.checked) {
-            map.addOverlayMapTypeId(kakao.maps.MapTypeId.ROADVIEW)
+                map.addOverlayMapTypeId(kakao.maps.MapTypeId.ROADVIEW)
         }
 
         // 자전거도로정보 체크박스가 체크되어있으면 지도에 자전거도로정보 지도타입을 추가합니다
@@ -233,10 +234,12 @@
         var infowindow = new kakao.maps.InfoWindow({
             content: `<div style="padding:5px;"> ${station.name} (${station.line}호선) </div>`
         });
+
         // 마커 클릭 시 정보창 열기
         kakao.maps.event.addListener(marker, 'click', function() {
             infowindow.open(map, marker);
         });
+
         return marker;
     });
 
