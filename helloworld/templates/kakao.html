@@ -57,6 +57,7 @@
             <input type="checkbox" id="chkUseDistrict" onclick="setOverlayMapTypeId()" /> 지적편집도 정보 보기
             <input type="checkbox" id="chkTerrain" onclick="setOverlayMapTypeId()" /> 지형정보 보기
             <input type="checkbox" id="chkTraffic" onclick="setOverlayMapTypeId()" /> 교통정보 보기
+            <input type="checkbox" id="chkUseROADVIEW" onclick="setOverlayMapTypeId()" /> 로드뷰 정보 보기
             <input type="checkbox" id="chkBicycle" onclick="setOverlayMapTypeId()" /> 자전거도로 정보 보기
         </p>
     <div class="coordinates-input">
@@ -96,13 +97,14 @@
         bicycle : kakao.maps.MapTypeId.BICYCLE,
         useDistrict : kakao.maps.MapTypeId.USE_DISTRICT
     };
-
+<!--map.addOverlayMapTypeId(kakao.maps.MapTypeId.ROADVIEW);-->
     // 체크 박스를 선택하면 호출되는 함수입니다
     function setOverlayMapTypeId() {
         var chkTerrain = document.getElementById('chkTerrain'),
             chkTraffic = document.getElementById('chkTraffic'),
             chkBicycle = document.getElementById('chkBicycle'),
-            chkUseDistrict = document.getElementById('chkUseDistrict');
+            chkUseDistrict = document.getElementById('chkUseDistrict'),
+            chkUseROADVIEW = document.getElementById('chkUseROADVIEW');
 
         // 지도 타입을 제거합니다
         for (var type in mapTypes) {
@@ -122,12 +124,20 @@
         // 교통정보 체크박스가 체크되어있으면 지도에 교통정보 지도타입을 추가합니다
         if (chkTraffic.checked) {
             map.addOverlayMapTypeId(mapTypes.traffic);
+
+        }
+
+        // 로드뷰 체크박스가 체크되어있으면 지도에 로드뷰정보 지도타입을 추가합니다
+        if (chkUseROADVIEW.checked) {
+            map.addOverlayMapTypeId(kakao.maps.MapTypeId.ROADVIEW)
         }
 
         // 자전거도로정보 체크박스가 체크되어있으면 지도에 자전거도로정보 지도타입을 추가합니다
         if (chkBicycle.checked) {
             map.addOverlayMapTypeId(mapTypes.bicycle);
         }
+
+
         // 지도 드래그, 줌 가능 여부를 설정 (모바일에서 활성화)
         map.setDraggable(true); // 드래그 가능하도록 설정
         map.setZoomable(true);  // 줌 가능하도록 설정
@@ -223,12 +233,10 @@
         var infowindow = new kakao.maps.InfoWindow({
             content: `<div style="padding:5px;"> ${station.name} (${station.line}호선) </div>`
         });
-
         // 마커 클릭 시 정보창 열기
         kakao.maps.event.addListener(marker, 'click', function() {
             infowindow.open(map, marker);
         });
-
         return marker;
     });
 
