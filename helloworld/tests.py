@@ -132,4 +132,21 @@ print(f"CSV 파일이 생성되었습니다: {output_csv_path}")
 # # 주소를 좌표로 변환하여 데이터프레임에 추가
 # add_coordinates_to_dataframe(df, 'Address')
 # df.to_csv('korea_np.csv', index=False, encoding='utf-8-sig')
-# df.head()
+# # df.head()
+#
+# <!DOCTYPE html>
+# <html lang="ko">
+# <head>
+#     <meta charset="UTF-8">
+#     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#     <title>미래 도시 정보</title>
+# </head>
+# <body>
+#     <h1></h1>
+#     <ul>
+#         <!-- 클릭 시 해당 위도, 경도를 파라미터로 전달 -->
+#         <li><a href="infoRealty?lat=37.5796&lng=126.9027">2024</a></li>
+#         <li><a href="infoRealty?lat=37.4784&lng=126.8646">2025</a></li>
+#     </ul>
+# </body>
+# </html>
