@@ -9,36 +9,26 @@ import pandas as pd
 import networkx as nx
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from math import radians, cos, sin, sqrt, atan2
-import threading
-
-# 캐시 변수
-station_cache = None
-graph_cache = None
 
 # view.py
+from django.http import JsonResponse
+from math import radians, cos, sin, sqrt, atan2
+
+load_stations_from_csv = []
+
 def index(request):
     return render(request, 'index.html')
 
 def log_activity(user, action):
-    def log():
-        ActivityLog.objects.create(user=user, action=action)
-
-    # 비동기 로그 처리
-    thread = threading.Thread(target=log)
-    thread.start()
+    ActivityLog.objects.create(user=user, action=action)
 
 def kakaomap(request):
     return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
 
 # Helper functions to load stations and build the graph
 def load_stations_from_csv():
-    global station_cache
-    if station_cache is not None:
-        return station_cache  # 캐시된 데이터 반환
-
     csv_file_path = os.path.join(settings.BASE_DIR, 'data', 'rawdata.csv')
+
     stations = []
     station_map = defaultdict(list)
 
@@ -60,34 +50,34 @@ def load_stations_from_csv():
             for station in station_list:
                 station['transfer'] = True
         stations.extend(station_list)
-
-    station_cache = stations  # 역 데이터 캐시
     return stations
 
 # CSV 파일에서 그래프를 생성하는 함수
 def build_graph_from_csv():
-    global graph_cache
-    if graph_cache is not None:
-        return graph_cache  # 캐시된 그래프 반환
-
+    # CSV 파일 경로 설정
+    # csv_file_path = os.path.join(settings.BASE_DIR,
+    #                              'C:\\Users\\parkk\\PycharmProjects\\infoRealty\\myDjango\\data',
+    #                              '1rawdata_shortest.csv')
     csv_file_path = os.path.join(settings.BASE_DIR, 'data', 'rawdata_shortest.csv')
+    # CSV 파일 읽기
     df = pd.read_csv(csv_file_path)
+    # print(df)
+    # 그래프 생성
     G = nx.Graph()
 
     # 각 줄에 있는 연결 정보를 읽어들여 그래프에 추가
     for _, row in df.iterrows():
         G.add_edge(row['Station A'], row['Station B'], weight=row['Weight'])
 
-    graph_cache = G  # 그래프 캐시
     return G
 
 # 두 지점 간의 거리를 계산하는 함수 (Haversine 공식을 사용)
 def calculate_distance(lat1, lon1, lat2, lon2):
     R = 6371  # 지구 반경 (킬로미터)
-    dLat = radians(lat2 - lat1)
-    dLon = radians(lon2 - lon1)
-    a = sin(dLat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dLon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = math.sin(dLat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dLon / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c * 1000  # 거리 (미터)
 
 # 좌표로부터 가장 가까운 역을 찾는 함수
@@ -155,18 +145,22 @@ def find_shortest_route(request):
                 return JsonResponse({'error': f'도착 역 "{end_station}"을(를) 찾을 수 없습니다.'}, status=404)
 
             # 최단 경로 계산 (Dijkstra 알고리즘)
-            path = nx.dijkstra_path(subway_graph, start_station, end_station, weight='weight')
-            path_length = nx.dijkstra_path_length(subway_graph, start_station, end_station, weight='weight')
+            try:
+                path = nx.dijkstra_path(subway_graph, start_station, end_station, weight='weight')
+                path_length = nx.dijkstra_path_length(subway_graph, start_station, end_station, weight='weight')
 
-            # 경로와 거리 정보를 JSON으로 반환
-            route = [{'name': station} for station in path]
-            return JsonResponse({'route': route, 'distance': path_length})
+                # 경로와 거리 정보를 JSON으로 반환
+                route = [{'name': station} for station in path]
+                return JsonResponse({'route': route, 'distance': path_length})
 
-        except nx.NetworkXNoPath as e:
-            return JsonResponse({'error': '경로를 찾을 수 없습니다.', 'details': str(e)}, status=404)
-        except json.JSONDecodeError as e:
-            return JsonResponse({'error': '잘못된 요청입니다.', 'details': str(e)}, status=400)
+            except nx.NetworkXNoPath:
+                return JsonResponse({'error': '경로를 찾을 수 없습니다.'}, status=404)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': '잘못된 요청입니다.'}, status=400)
         except Exception as e:
-            return JsonResponse({'error': f'서버 오류: {str(e)}'}, status=500)
+            return JsonResponse({'error': f'서버 오류: {str(e)}'}, status=500)  # 기타 예외 처리
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+

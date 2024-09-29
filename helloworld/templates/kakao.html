@@ -279,6 +279,13 @@ document.getElementById('findNearestStations').addEventListener('click', functio
                 <p>출발지 근처 역: ${result.start_station.name} (${result.start_station.line}호선), 거리: ${result.start_station.distance.toFixed(2)}m</p>
                 <p>도착지 근처 역: ${result.end_station.name} (${result.end_station.line}호선), 거리: ${result.end_station.distance.toFixed(2)}m</p>
             `;
+            // 입력 필드 초기화
+            document.getElementById('startLatLng').value = '';
+            document.getElementById('endLatLng').value = '';
+            document.getElementById('startLat').value = '';
+            document.getElementById('startLng').value = '';
+            document.getElementById('endLat').value = '';
+            document.getElementById('endLng').value = '';
 
             // 최단 경로 요청
             const routeData = {
