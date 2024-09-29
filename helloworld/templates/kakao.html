@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Map</title>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268&libraries=clusterer"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268"></script>
     <style>
         /* 기본 스타일: PC에서 적용될 기본 설정 */
         #map {
@@ -195,12 +195,12 @@
         {% endfor %}
     ];
 
-    // 클러스터러 생성
-    var clusterer = new kakao.maps.MarkerClusterer({
-        map: map, // 클러스터러를 적용할 지도
-        averageCenter: true, // 클러스터의 중심을 평균 좌표로 설정
-        minLevel: 10 // 클러스터링을 할 최소 지도 레벨
-    });
+<!--    // 클러스터러 생성-->
+<!--    var clusterer = new kakao.maps.MarkerClusterer({-->
+<!--        map: map, // 클러스터러를 적용할 지도-->
+<!--        averageCenter: true, // 클러스터의 중심을 평균 좌표로 설정-->
+<!--        minLevel: 10 // 클러스터링을 할 최소 지도 레벨-->
+<!--    });-->
 
     // 마커 생성 및 클러스터러에 추가
     var markers = subwayData.map(function(station) {
@@ -243,143 +243,117 @@
         return marker;
     });
 
-    // 생성된 마커들을 클러스터러에 추가
-    clusterer.addMarkers(markers);
+<!--    // 생성된 마커들을 클러스터러에 추가-->
+<!--    clusterer.addMarkers(markers);-->
+    markers.forEach(function(marker) {
+        marker.setMap(map); // 마커를 지도에 직접 추가
+    });
 
+document.getElementById('findNearestStations').addEventListener('click', function() {
+    const startLat = parseFloat(document.getElementById('startLat').value);
+    const startLng = parseFloat(document.getElementById('startLng').value);
+    const endLat = parseFloat(document.getElementById('endLat').value);
+    const endLng = parseFloat(document.getElementById('endLng').value);
 
-    // 가장 가까운 역을 찾는 함수
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // 지구의 반경 (킬로미터)
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c * 1000; // 거리 (미터)
-    }
+    if (!isNaN(startLat) && !isNaN(startLng) && !isNaN(endLat) && !isNaN(endLng)) {
+        // 서버에 출발지와 도착지 좌표를 전송하여 가장 가까운 역을 찾음
+        const data = {
+            startLat: startLat,
+            startLng: startLng,
+            endLat: endLat,
+            endLng: endLng
+        };
 
-    function findNearestStation(lat, lng) {
-        let nearestStation = null;
-        let minDistance = Infinity;
-        let nearestDistance = 0;
-
-        subwayData.forEach(function(station) {
-            const distance = calculateDistance(lat, lng, station.latitude, station.longitude);
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearestStation = station;
-                nearestDistance = distance;
-            }
-        });
-
-        return { station: nearestStation, distance: nearestDistance };
-    }
-
-    // 출발지와 도착지에 대해 가장 가까운 역을 찾는 이벤트
-    document.getElementById('findNearestStations').addEventListener('click', function() {
-        const startLat = parseFloat(document.getElementById('startLat').value);
-        const startLng = parseFloat(document.getElementById('startLng').value);
-        const endLat = parseFloat(document.getElementById('endLat').value);
-        const endLng = parseFloat(document.getElementById('endLng').value);
-
-        if (!isNaN(startLat) && !isNaN(startLng) && !isNaN(endLat) && !isNaN(endLng)) {
-            const nearestStart = findNearestStation(startLat, startLng);  // 출발지 근처 역 찾기
-            const nearestEnd = findNearestStation(endLat, endLng);        // 도착지 근처 역 찾기
-
+        fetch('/find_nearest_stations/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()  // CSRF 토큰 가져오는 함수
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = `
-                <p>출발지 근처 역: ${nearestStart.station.name} (${nearestStart.station.line}호선), 거리: ${nearestStart.distance.toFixed(2)}m</p>
-                <p>도착지 근처 역: ${nearestEnd.station.name} (${nearestEnd.station.line}호선), 거리: ${nearestEnd.distance.toFixed(2)}m</p>
+                <p>출발지 근처 역: ${result.start_station.name} (${result.start_station.line}호선), 거리: ${result.start_station.distance.toFixed(2)}m</p>
+                <p>도착지 근처 역: ${result.end_station.name} (${result.end_station.line}호선), 거리: ${result.end_station.distance.toFixed(2)}m</p>
             `;
 
-
-            // 입력 필드 초기화
-            document.getElementById('startLatLng').value = '';
-            document.getElementById('startLat').value = '';
-            document.getElementById('startLng').value = '';
-            document.getElementById('endLatLng').value = '';
-            document.getElementById('endLat').value = '';
-            document.getElementById('endLng').value = '';
-
-            // 서버에 보낼 데이터 준비
-            const data = {
-                startStation: nearestStart.station.name,
-                endStation: nearestEnd.station.name
+            // 최단 경로 요청
+            const routeData = {
+                startStation: result.start_station.name,
+                endStation: result.end_station.name
             };
 
-    fetch('/find_shortest_route/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()  // CSRF 토큰 가져오는 함수
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.route) {
-            // Display the route and total distance together in the same line
-            let routeInfo = `<p>최단 노선 경로 (최단 노선 거리: ${result.distance.toFixed(2)}m):</p><div>`;
-            let stationNames = {};  // Dictionary to track station name occurrences
+            fetch('/find_shortest_route/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(routeData)
+            })
+            .then(response => response.json())
+            .then(routeResult => {
+                if (routeResult.route) {
+                    let routeInfo = `<p>최단 노선 경로 (최단 노선 거리: ${routeResult.distance.toFixed(2)}m):</p><div>`;
+                    let stationNames = {};  // 각 역 이름의 등장 횟수를 추적
 
-            // First pass: count station names (without line info) to find duplicates
-            result.route.forEach((station) => {
-                const currentStationName = station.name.split('(')[0];  // Extract station name without line info
-                if (stationNames[currentStationName]) {
-                    stationNames[currentStationName]++;
+                    // 역 이름별 등장 횟수 계산
+                    routeResult.route.forEach((station) => {
+                        const currentStationName = station.name.split('(')[0];  // 역 이름 (호선 제외)
+                        if (stationNames[currentStationName]) {
+                            stationNames[currentStationName]++;
+                        } else {
+                            stationNames[currentStationName] = 1;
+                        }
+                    });
+
+                    // 경로를 표시하면서, 환승역(여러 번 등장한 역)에는 파란색 강조 표시
+                    routeResult.route.forEach((station, index) => {
+                        const currentStationName = station.name.split('(')[0];  // 역 이름 (호선 제외)
+
+                        // 환승역은 파란색으로 표시
+                        if (stationNames[currentStationName] > 1) {
+                            routeInfo += `<span style="color: blue;">${station.name}</span>`;
+                        } else {
+                            // 그렇지 않으면 그냥 표시
+                            routeInfo += `${station.name}`;
+                        }
+
+                        if (index < routeResult.route.length - 1) {
+                            routeInfo += ' → ';  // 역 사이에 화살표 추가
+                        }
+                    });
+
+                    routeInfo += '</div>';
+                    resultDiv.innerHTML += routeInfo;
                 } else {
-                    stationNames[currentStationName] = 1;
+                    resultDiv.innerHTML += '<h2>경로를 찾을 수 없습니다.</h2>';
                 }
             });
-
-            // Second pass: generate the route with highlighting for duplicate station names
-            result.route.forEach((station, index) => {
-                const currentStationName = station.name.split('(')[0];  // Extract station name without line info
-
-                // If the station name occurs more than once, highlight in blue
-                if (stationNames[currentStationName] > 1) {
-                    routeInfo += `<span style="color: blue;">${station.name}</span>`;
-                } else {
-                    // Otherwise, display it normally
-                    routeInfo += `${station.name}`;
-                }
-
-                if (index < result.route.length - 1) {
-                    // Add arrow between stations, but not after the last station
-                    routeInfo += ' → ';
-                }
-            });
-
-            routeInfo += '</div>';
-            resultDiv.innerHTML += routeInfo;
-        } else {
-            resultDiv.innerHTML += '<h2>경로를 찾을 수 없습니다.</h2>';
-        }
-    })
-    .catch(error => {
-        console.error('Error fetching shortest route:', error);
-        alert('최단 경로를 가져오는 중 오류가 발생했습니다.');
-    });
-        } else {
-            alert('출발지와 도착지 좌표를 정확히 입력하세요.');
-        }
-    });
-
-    // CSRF 토큰을 가져오는 함수 (Django CSRF 토큰 처리)
-    function getCSRFToken() {
-        let csrfToken = null;
-        const cookies = document.cookie.split(';');
-        cookies.forEach(cookie => {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'csrftoken') {
-                csrfToken = value;
-            }
+        })
+        .catch(error => {
+            console.error('Error fetching nearest stations or route:', error);
+            alert('오류가 발생했습니다.');
         });
-        return csrfToken;
+    } else {
+        alert('출발지와 도착지 좌표를 정확히 입력하세요.');
     }
+});
 
+function getCSRFToken() {
+    let csrfToken = null;
+    const cookies = document.cookie.split(';');
+    cookies.forEach(cookie => {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            csrfToken = value;
+        }
+    });
+    return csrfToken;
+}
     </script>
 
 </body>
