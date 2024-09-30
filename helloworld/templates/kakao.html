@@ -48,6 +48,7 @@
                 font-size: 1.1em;
             }
         }
+
     </style>
 </head>
 <body>
@@ -75,7 +76,7 @@
     </div>
 
     <div id="result"></div>
-
+{% load static %}
     <script>
 
     var mapContainer = document.getElementById('map'),
@@ -86,6 +87,7 @@
 
 
     var map = new kakao.maps.Map(mapContainer, mapOption);
+<!--    mapContainer.style.opacity = "0.9"; // 투명도 설정 (0.0~1.0)-->
     // 지도 타입 정보를 가지고 있을 객체입니다
     // map.addOverlayMapTypeId 함수로 추가된 지도 타입은
     // 가장 나중에 추가된 지도 타입이 가장 앞에 표시됩니다
@@ -206,21 +208,47 @@
     var markers = subwayData.map(function(station) {
         var markerPosition = new kakao.maps.LatLng(station.latitude, station.longitude);
 
-        // 마커 이미지 설정
-        var markerImage = null;
-        if (station.transfer) {
-            markerImage = new kakao.maps.MarkerImage(
-                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', // 환승 마커 이미지
-                new kakao.maps.Size(20, 20),
-                {offset: new kakao.maps.Point(20, 20)}
-            );
-        } else {
-            markerImage = new kakao.maps.MarkerImage(
-                'http://t1.daumcdn.net/localimg/localimages/07/2018/pc/img/marker_spot.png', // 기본 마커 이미지
-                new kakao.maps.Size(20, 20),
-                {offset: new kakao.maps.Point(20, 20)}
-            );
-        }
+var markerImage = null;
+
+if (station.transfer) {
+    // 환승역일 경우 환승 마커 이미지 설정
+    markerImage = new kakao.maps.MarkerImage(
+        "{% static 'image/transfer.png' %}",  // 환승 마커 이미지 경로
+        new kakao.maps.Size(20, 20),
+        {offset: new kakao.maps.Point(10, 20)}
+    );
+} else {
+    // line 값에 따라 다른 마커 이미지를 설정
+    var imageUrl = "";
+
+    if (station.line == 1) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_1.png' %}";
+    } else if (station.line == 2) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_2.png' %}";
+    } else if (station.line == 3) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_3.png' %}";
+    } else if (station.line == 4) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_4.png' %}";
+    } else if (station.line == 5) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_5.png' %}";
+    } else if (station.line == 6) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_6.png' %}";
+    } else if (station.line == 7) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_7.png' %}";
+    } else if (station.line == 8) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_8.png' %}";
+    } else if (station.line == 9) {
+        imageUrl = "{% static 'image/Seoul_Metro_Line_9.png' %}";
+    } else {
+        imageUrl = "{% static 'image/default_marker.png' %}";  // 기본 이미지 (선택 사항)
+    }
+
+    markerImage = new kakao.maps.MarkerImage(
+        imageUrl,  // line에 따른 마커 이미지 경로
+        new kakao.maps.Size(20, 20),
+        {offset: new kakao.maps.Point(10, 20)}
+    );
+}
 
         // 마커 생성
         var marker = new kakao.maps.Marker({

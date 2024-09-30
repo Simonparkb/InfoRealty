@@ -16,26 +16,11 @@ import networkx as nx
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
-import os
-import pandas as pd
-
-import os
-import pandas as pd
-import networkx as nx
-
-import os
-import pandas as pd
-import networkx as nx
-
-import os
-import pandas as pd
-import networkx as nx
-
 
 
 def create_optimized_graph():
     # CSV 파일 경로 설정
-    csv_file_path = os.path.join('C:\\Users\\parkk\\PycharmProjects\\infoRealty\\myDjango\\rawdata.csv')
+    csv_file_path = os.path.join('C:\\Users\\parkk\\PycharmProjects\\infoRealty\\myDjango\\data\\rawdata.csv')
 
     # CSV 파일 읽기
     df = pd.read_csv(csv_file_path)

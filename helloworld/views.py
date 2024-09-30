@@ -67,7 +67,7 @@ def build_graph_from_csv():
 
     # 각 줄에 있는 연결 정보를 읽어들여 그래프에 추가
     for _, row in df.iterrows():
-        G.add_edge(row['Station A'], row['Station B'], weight=row['Weight'])
+        G.add_edge(row['source'], row['target'], weight=row['weight'])
 
     return G
 
@@ -164,3 +164,45 @@ def find_shortest_route(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
+def create_optimized_graph():
+    # CSV 파일 경로 설정
+    csv_file_path = os.path.join('C:\\Users\\parkk\\PycharmProjects\\infoRealty\\myDjango\\data\\rawdata.csv')
+
+    # CSV 파일 읽기
+    df = pd.read_csv(csv_file_path)
+
+    # 무방향 그래프 생성
+    G = nx.Graph()
+
+    # 1. 같은 노선에서 인접한 역들 간의 연결 (가중치 1)
+    for line, line_data in df.groupby('line'):
+        line_data = line_data.reset_index(drop=True)
+
+        # 연속된 역들 간의 연결 정보를 그래프에 추가
+        G.add_edges_from([(line_data.loc[i, 'name'], line_data.loc[i + 1, 'name'], {'weight': 1})
+                          for i in range(len(line_data) - 1)])
+
+    # 2. 같은 이름을 가진 다른 노선 간의 연결 (환승, 가중치 2)
+    df['station_prefix'] = df['name'].str.extract(r'^(.*)\(')
+    for station_prefix, matching_stations in df.groupby('station_prefix'):
+        if len(matching_stations) > 1:
+            G.add_edges_from([(row['name'], row2['name'], {'weight': 2})
+                              for i, row in matching_stations.iterrows()
+                              for j, row2 in matching_stations.iterrows() if i < j])
+
+    # 3. 환승역과 인접한 다른 노선의 역 간의 연결 (가중치 1)
+    coord_group = df.groupby(['Latitude', 'Longitude'])
+    for _, group in coord_group:
+        if len(group) > 1:
+            G.add_edges_from([(row['name'], row2['name'], {'weight': 1})
+                              for i, row in group.iterrows()
+                              for j, row2 in group.iterrows() if i < j])
+
+    # 그래프를 데이터프레임으로 변환 (간선 정보 추출)
+    shortest_paths = pd.DataFrame(nx.to_pandas_edgelist(G))
+
+    # 결과 CSV로 저장
+    output_csv_path = os.path.join(settings.BASE_DIR, 'data', 'rawdata_shortest.csv')
+    shortest_paths.to_csv(output_csv_path, index=False)
+
+    return output_csv_path
