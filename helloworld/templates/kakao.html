@@ -331,7 +331,7 @@ document.getElementById('findNearestStations').addEventListener('click', functio
             .then(response => response.json())
             .then(routeResult => {
                 if (routeResult.route) {
-                    let routeInfo = `<p>최단 노선 경로 (최단 노선 거리:):</p><div>`;
+                    let routeInfo = `<p>최단 노선 경로:</p><div>`;
                     let stationNames = {};  // 각 역 이름의 등장 횟수를 추적
 
                     // 역 이름별 등장 횟수 계산

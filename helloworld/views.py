@@ -194,7 +194,6 @@ def find_shortest_route(request):
                 stations = load_stations_from_csv()  # 모든 역 데이터를 로드
                 transfer_count = 0
                 regular_count = 0
-                regular_line_counts = {}  # 각 호선의 등장 횟수를 저장할 딕셔너리
 
                 for station in path:
                     # 역 이름에 해당하는 데이터를 찾음
@@ -204,19 +203,13 @@ def find_shortest_route(request):
                             transfer_count += 1
                         else:
                             regular_count += 1
-                            line = station_info['line']
-                            if line in regular_line_counts:
-                                regular_line_counts[line] += 1  # 이미 존재하는 호선이라면 1 추가
-                            else:
-                                regular_line_counts[line] = 1  # 처음 등장하는 호선이라면 1로 초기화
 
-                # 경로와 역 개수 및 일반역의 호선별 등장 횟수를 JSON으로 반환
+                # 경로와 역 개수 정보를 JSON으로 반환
                 route = [{'name': station} for station in path]
                 return JsonResponse({
                     'route': route,
                     'transfer_count': transfer_count,
-                    'regular_count': regular_count,
-                    'regular_line_counts': regular_line_counts  # 일반역의 호선별 등장 횟수
+                    'regular_count': regular_count
                 })
 
             except nx.NetworkXNoPath:

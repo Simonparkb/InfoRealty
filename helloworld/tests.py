@@ -17,8 +17,6 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 
-
-def create_optimized_graph():
     # CSV 파일 경로 설정
     csv_file_path = os.path.join('C:\\Users\\parkk\\PycharmProjects\\infoRealty\\myDjango\\data\\rawdata.csv')
 
