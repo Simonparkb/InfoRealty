@@ -214,8 +214,8 @@
         // 환승역일 경우 환승 마커 이미지 설정
         markerImage = new kakao.maps.MarkerImage(
             "{% static 'image/transfer.png' %}",  // 환승 마커 이미지 경로
-            new kakao.maps.Size(20, 20),
-            {offset: new kakao.maps.Point(10, 20)}
+            new kakao.maps.Size(10, 10),
+            {offset: new kakao.maps.Point(5, 10)}
         );
     } else {
         // line 값에 따라 다른 마커 이미지를 설정
@@ -245,8 +245,8 @@
 
         markerImage = new kakao.maps.MarkerImage(
             imageUrl,  // line에 따른 마커 이미지 경로
-            new kakao.maps.Size(20, 20),
-            {offset: new kakao.maps.Point(10, 20)}
+            new kakao.maps.Size(10, 10),
+            {offset: new kakao.maps.Point(5, 10)}
         );
         }
         // 마커 생성
