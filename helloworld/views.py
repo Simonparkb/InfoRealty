@@ -16,6 +16,21 @@ from math import radians, cos, sin, sqrt, atan2
 stations_cache = None
 graph_cache = None
 
+# 호선별 이동 시간을 정의한 딕셔너리
+line_travel_times = {
+    '1': 2.0,  # 1호선: 2분
+    '2': 1.8,  # 2호선: 1.8분
+    '3': 2.2,  # 3호선: 2.2분
+    '4': 2.1,  # 4호선: 2.1분
+    '5': 2.3,  # 5호선: 2.3분
+    '6': 2.4,  # 6호선: 2.4분
+    '7': 2.5,  # 7호선: 2.5분
+    '8': 2.6,  # 8호선: 2.6분
+    '9': 2.7,  # 9호선: 2.7분
+    'Sinbundang': 1.5  # 신분당선: 1.5분
+}
+# 환승 시간을 정의
+transfer_time = 5.0  # 환승 시간 5분
 
 def index(request):
     return render(request, 'index.html')
@@ -78,26 +93,33 @@ def create_optimized_graph():
         G = nx.Graph()
 
         try:
-            # 1. 같은 노선에서 인접한 역들 간의 연결 (가중치 1)
+            # 1. 같은 노선에서 인접한 역들 간의 연결 (가중치: 호선별 이동시간)
             for line, line_data in df.groupby('line'):
                 line_data = line_data.reset_index(drop=True)
 
+                travel_time = line_travel_times.get(str(line), 2.0)  # 기본 이동시간 2분
+
                 for i in range(len(line_data) - 1):
                     # 역과 노선을 함께 연결
-                    G.add_edge(f"{line_data.loc[i, 'name']} ({line}호선)",
-                               f"{line_data.loc[i + 1, 'name']} ({line}호선)", weight=1)
-                print(f"{line} 노선 연결 완료")
+                    G.add_edge(
+                        f"{line_data.loc[i, 'name']} ({line}호선)",
+                        f"{line_data.loc[i + 1, 'name']} ({line}호선)",
+                        weight=travel_time  # 호선별 이동 시간 적용
+                    )
+                print(f"{line}호선 연결 완료")
 
-            # 2. 같은 이름을 가진 다른 노선 간의 연결 (환승, 가중치 2)
+            # 2. 같은 이름을 가진 다른 노선 간의 연결 (환승, 가중치: 환승 시간)
             for station_name, matching_stations in df.groupby('name'):
                 if len(matching_stations) > 1:
                     for i, row in matching_stations.iterrows():
                         for j, row2 in matching_stations.iterrows():
                             if i < j:
-                                # 같은 이름의 다른 노선 간 연결
-                                G.add_edge(f"{row['name']} ({row['line']}호선)",
-                                           f"{row2['name']} ({row2['line']}호선)",
-                                           weight=2)
+                                # 같은 이름의 다른 노선 간 연결 (환승)
+                                G.add_edge(
+                                    f"{row['name']} ({row['line']}호선)",
+                                    f"{row2['name']} ({row2['line']}호선)",
+                                    weight=transfer_time  # 환승 시간 적용
+                                )
             print("환승 연결 완료")
 
             graph_cache = G
@@ -108,6 +130,8 @@ def create_optimized_graph():
             return None
 
     return graph_cache
+
+
 @csrf_exempt
 def find_shortest_route(request):
     if request.method == 'POST':
@@ -143,28 +167,52 @@ def find_shortest_route(request):
 
                 # CSV에서 역 정보 로드
                 stations = load_stations_from_csv()
+                total_time = 0  # 종합 시간 초기화
                 transfer_count = 0
                 regular_count = 0
 
                 route = []
-                for station in path:
-                    station_info = next((s for s in stations if station == f"{s['name']} ({s['line']}호선)"), None)
+                for i in range(len(path) - 1):
+                    current_station = path[i]
+                    next_station = path[i + 1]
 
-                    if station_info:
+                    # 현재 역과 다음 역 정보 가져오기
+                    current_station_info = next(
+                        (s for s in stations if current_station == f"{s['name']} ({s['line']}호선)"), None)
+                    next_station_info = next((s for s in stations if next_station == f"{s['name']} ({s['line']}호선)"),
+                                             None)
+
+                    if current_station_info and next_station_info:
                         route.append({
-                            'name': station_info['name'],
-                            'line': station_info['line'],
-                            'transfer': station_info['transfer']
+                            'name': current_station_info['name'],
+                            'line': current_station_info['line'],
+                            'transfer': current_station_info['transfer']
                         })
-                        if station_info['transfer']:
-                            transfer_count += 1
+
+                        if current_station_info['line'] == next_station_info['line']:
+                            # 같은 노선에 있는 경우, 호선별 이동 시간 계산
+                            travel_time = calculate_travel_time(current_station_info['line'])
                         else:
-                            regular_count += 1
+                            # 다른 노선으로 환승하는 경우, 환승 시간 추가
+                            travel_time = calculate_transfer_time()
+                            transfer_count += 1
+
+                        total_time += travel_time  # 이동 시간을 종합 시간에 더하기
+                        regular_count += 1 if not current_station_info['transfer'] else 0
                     else:
-                        return JsonResponse({'error': f'역 "{station}"에 대한 정보를 찾을 수 없습니다.'}, status=404)
+                        return JsonResponse({'error': f'역 "{current_station}" 또는 "{next_station}"에 대한 정보를 찾을 수 없습니다.'},
+                                            status=404)
+
+                # 도착역 추가
+                route.append({
+                    'name': next_station_info['name'],
+                    'line': next_station_info['line'],
+                    'transfer': next_station_info['transfer']
+                })
 
                 return JsonResponse({
                     'route': route,
+                    'total_time': total_time,  # 종합 시간을 포함
                     'transfer_count': transfer_count,
                     'regular_count': regular_count
                 })
@@ -179,8 +227,13 @@ def find_shortest_route(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+# 호선별 이동 시간 계산
+def calculate_travel_time(line):
+    return line_travel_times.get(str(line), 2.0)  # 기본값은 2분
 
-
+# 환승 시간 계산
+def calculate_transfer_time():
+    return transfer_time  # 환승 시간은 고정 5분 (예시)
 
 
 # 두 지점 간의 거리를 계산하는 함수 (Haversine 공식을 사용)
@@ -202,7 +255,6 @@ def calculate_nearest_station(lat, lng, stations):
             min_distance = distance
             nearest_station = station
     return nearest_station, min_distance
-
 
 @csrf_exempt
 def find_nearest_stations(request):
@@ -234,16 +286,23 @@ def find_nearest_stations(request):
             nearest_start, start_distance = calculate_nearest_station(start_lat, start_lng, filtered_stations)
             nearest_end, end_distance = calculate_nearest_station(end_lat, end_lng, filtered_stations)
 
+            # 걷는 시간 계산 (100미터 당 70초)
+            walk_time_per_meter = 70 / 100  # 초/미터
+            start_walk_time = (start_distance * walk_time_per_meter) / 60  # 분으로 변환
+            end_walk_time = (end_distance * walk_time_per_meter) / 60  # 분으로 변환
+
             return JsonResponse({
                 'start_station': {
                     'name': nearest_start['name'],
                     'line': nearest_start['line'],
-                    'distance': start_distance
+                    'distance': start_distance,
+                    'walk_time': round(start_walk_time, 1)  # 소수점 첫째 자리까지
                 },
                 'end_station': {
                     'name': nearest_end['name'],
                     'line': nearest_end['line'],
-                    'distance': end_distance
+                    'distance': end_distance,
+                    'walk_time': round(end_walk_time, 1)  # 소수점 첫째 자리까지
                 }
             })
 
