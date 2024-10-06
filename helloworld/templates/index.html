@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title></title>
+    <title>Login Page</title>
     <style>
         * {
             box-sizing: border-box;
@@ -24,7 +24,7 @@
         }
 
 <!--        .container {-->
-<!--            max-width: 600px;-->
+<!--            max-width: 400px;-->
 <!--            width: 100%;-->
 <!--            background-color: #fff;-->
 <!--            border-radius: 16px;-->
@@ -101,13 +101,28 @@
 <body>
 
 <div class="container">
-
+    <h1>이사노트!</h1>
     <div class="button-container">
-        <!-- 버튼 클릭 시 infoRealty/로 이동 -->
-        <a href="{% url 'kakaomap' %}" class="big-button">이사노트</a>
+        <!-- 버튼 클릭 시 JavaScript로 비밀번호 확인 -->
+        <button class="big-button" onclick="promptPassword()">다음</button>
     </div>
-
 </div>
+
+<script>
+    function promptPassword() {
+        // 사용자에게 비밀번호 입력 받기
+        const password = prompt("비밀번호를 입력하세요:");
+
+        // 비밀번호가 'qwer1234!'과 일치하는지 확인
+        if (password === 'qwer1234!') {
+            // 비밀번호가 맞으면 해당 페이지로 이동
+            window.location.href = "{% url 'kakaomap' %}";
+        } else {
+            // 비밀번호가 틀리면 경고 메시지
+            alert("비밀번호가 틀렸습니다.");
+        }
+    }
+</script>
 
 </body>
 </html>
