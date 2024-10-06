@@ -97,17 +97,18 @@
         </p>
     <div class="coordinates-input">
         <!-- 지도에서 출발지와 도착지를 선택해달라는 문구 추가 -->
-        <p><strong>지도에서 출발지와 도착지를 선택해주세요.</strong></p>
-        <label>출발지:
-            <input type="text" id="startLatLng" readonly placeholder="출발지 좌표 클릭">
-            <input type="hidden" id="startLat">
-            <input type="hidden" id="startLng">
-        </label>
-        <label>도착지:
-            <input type="text" id="endLatLng" readonly placeholder="도착지 좌표 클릭">
-            <input type="hidden" id="endLat">
-            <input type="hidden" id="endLng">
-        </label>
+        <p><strong>지도에서 출발지와 도착지를 선택해주세요.</strong>
+            <label>출발지:
+                <input type="text" id="startLatLng" readonly placeholder="출발지 좌표 클릭">
+                <input type="hidden" id="startLat">
+                <input type="hidden" id="startLng">
+            </label>
+            <label>도착지:
+                <input type="text" id="endLatLng" readonly placeholder="도착지 좌표 클릭">
+                <input type="hidden" id="endLat">
+                <input type="hidden" id="endLng">
+            </label>
+        </p>
         <button id="findNearestStations">최단 경로 찾기</button>
         <button id="resetButton">초기화</button>
     </div>
