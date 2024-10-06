@@ -48,18 +48,52 @@
                 font-size: 1.1em;
             }
         }
+        .result-item {
+            border: 1px solid #ccc;  /* 박스 테두리 */
+            padding: 10px;
+            margin-bottom: 10px;
+            position: relative;
+            background-color: #f9f9f9;  /* 박스 배경 */
+            border-radius: 5px;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);  /* 그림자 효과 */
+        }
 
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 50%;  /* 원형 버튼 */
+            font-weight: bold;
+        }
+
+        .delete-btn:hover {
+            background-color: #ff0000;  /* 버튼 호버 효과 */
+        }
     </style>
 </head>
 <body>
     <h1></h1>
     <div id="map"></div>
         <p>
+            <label>지도 정보:</label>
             <input type="checkbox" id="chkUseDistrict" onclick="setOverlayMapTypeId()" /> 지적편집도 정보 보기
             <input type="checkbox" id="chkTerrain" onclick="setOverlayMapTypeId()" /> 지형정보 보기
             <input type="checkbox" id="chkTraffic" onclick="setOverlayMapTypeId()" /> 교통정보 보기
             <input type="checkbox" id="chkUseROADVIEW" onclick="setOverlayMapTypeId()" /> 로드뷰 정보 보기
             <input type="checkbox" id="chkBicycle" onclick="setOverlayMapTypeId()" /> 자전거도로 정보 보기
+        </p>
+        <p>
+            <label>노선 선택:</label>
+            <label><input type="checkbox" id="excludeLine1" value="1" checked> 기본노선</label>
+            <label><input type="checkbox" id="excludeLine2" value="2" checked> 신규노선1</label>
+            <label><input type="checkbox" id="excludeLine3" value="3" checked> 신규노선2</label>
+            <label><input type="checkbox" id="excludeLine4" value="4" checked> 신규노선3</label>
+            <label><input type="checkbox" id="excludeLine5" value="5" checked> 신규노선4</label>
         </p>
     <div class="coordinates-input">
         <label>출발지:
@@ -72,7 +106,8 @@
             <input type="hidden" id="endLat">
             <input type="hidden" id="endLng">
         </label>
-        <button id="findNearestStations">가까운 역 찾기</button>
+        <button id="findNearestStations">최단 경로 찾기</button>
+        <button id="resetButton">초기화</button>
     </div>
 
     <div id="result"></div>
@@ -184,7 +219,6 @@
         clickCount++;
     });
 
-    // 지하철역 마커를 지도에 표시하는 부분은 그대로 유지
     var subwayData = [
         {% for station in stations %}
         {
@@ -197,58 +231,46 @@
         {% endfor %}
     ];
 
-<!--    // 클러스터러 생성-->
-<!--    var clusterer = new kakao.maps.MarkerClusterer({-->
-<!--        map: map, // 클러스터러를 적용할 지도-->
-<!--        averageCenter: true, // 클러스터의 중심을 평균 좌표로 설정-->
-<!--        minLevel: 10 // 클러스터링을 할 최소 지도 레벨-->
-<!--    });-->
-
-    // 마커 생성 및 클러스터러에 추가
     var markers = subwayData.map(function(station) {
         var markerPosition = new kakao.maps.LatLng(station.latitude, station.longitude);
 
     var markerImage = null;
 
+    // 마커 이미지 경로를 반환하는 함수
+    function getMarkerImageUrlByLine(line) {
+        line = parseInt(line, 10);  // 숫자로 변환
+        switch(line) {
+            case 1: return "{% static 'image/Seoul_Metro_Line_1.png' %}";
+            case 2: return "{% static 'image/Seoul_Metro_Line_2.png' %}";
+            case 3: return "{% static 'image/Seoul_Metro_Line_3.png' %}";
+            case 4: return "{% static 'image/Seoul_Metro_Line_4.png' %}";
+            case 5: return "{% static 'image/Seoul_Metro_Line_5.png' %}";
+            case 6: return "{% static 'image/Seoul_Metro_Line_6.png' %}";
+            case 7: return "{% static 'image/Seoul_Metro_Line_7.png' %}";
+            case 8: return "{% static 'image/Seoul_Metro_Line_8.png' %}";
+            case 9: return "{% static 'image/Seoul_Metro_Line_9.png' %}";
+            case 'Sinbundang': return "{% static 'image/Sinbundang.png' %}";
+            case 'Suinbundang': return "{% static 'image/Suinbundang.png' %}";
+            default: return "{% static 'image/default_marker.png' %}";  // 기본 이미지
+        }
+    }
+
+    // 환승역일 경우 환승 마커 이미지 설정
     if (station.transfer) {
-        // 환승역일 경우 환승 마커 이미지 설정
         markerImage = new kakao.maps.MarkerImage(
             "{% static 'image/transfer.png' %}",  // 환승 마커 이미지 경로
             new kakao.maps.Size(10, 10),
             {offset: new kakao.maps.Point(5, 10)}
         );
     } else {
-        // line 값에 따라 다른 마커 이미지를 설정
-        var imageUrl = "";
-
-        if (station.line == 1) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_1.png' %}";
-        } else if (station.line == 2) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_2.png' %}";
-        } else if (station.line == 3) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_3.png' %}";
-        } else if (station.line == 4) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_4.png' %}";
-        } else if (station.line == 5) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_5.png' %}";
-        } else if (station.line == 6) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_6.png' %}";
-        } else if (station.line == 7) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_7.png' %}";
-        } else if (station.line == 8) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_8.png' %}";
-        } else if (station.line == 9) {
-            imageUrl = "{% static 'image/Seoul_Metro_Line_9.png' %}";
-        } else {
-            imageUrl = "{% static 'image/default_marker.png' %}";  // 기본 이미지 (선택 사항)
-        }
-
+        // line 값에 따라 다른 마커 이미지를 설정 (getMarkerImageUrlByLine 함수 사용)
+        var imageUrl = getMarkerImageUrlByLine(station.line);
         markerImage = new kakao.maps.MarkerImage(
             imageUrl,  // line에 따른 마커 이미지 경로
             new kakao.maps.Size(10, 10),
             {offset: new kakao.maps.Point(5, 10)}
         );
-        }
+    }
         // 마커 생성
         var marker = new kakao.maps.Marker({
             position: markerPosition,
@@ -270,8 +292,6 @@
         return marker;
     });
 
-<!--    // 생성된 마커들을 클러스터러에 추가-->
-<!--    clusterer.addMarkers(markers);-->
     markers.forEach(function(marker) {
         marker.setMap(map); // 마커를 지도에 직접 추가
     });
@@ -282,13 +302,52 @@ document.getElementById('findNearestStations').addEventListener('click', functio
     const endLat = parseFloat(document.getElementById('endLat').value);
     const endLng = parseFloat(document.getElementById('endLng').value);
 
+    const includeLines = [];  // 선택된 노선 목록
+    let selectedTypes = '';  // 선택된 노선 유형을 표시할 변수
+
+    // 기본 노선이 선택되었으면 1~9번 노선을 모두 추가하고 '기본 노선'으로 표시
+    if (document.getElementById('excludeLine1').checked) {
+        includeLines.push('1', '2', '3', '4', '5', '6', '7', '8', '9');
+        selectedTypes += '기본 노선,';
+    }
+
+
+    // 신규 노선이 선택되었으면 추가로 처리할 수 있도록 구현
+    if (document.getElementById('excludeLine2').checked) {
+        includeLines.push('Sinbundang', 'Sinbundang');
+        selectedTypes += '신규 노선1,';
+    }
+    if (document.getElementById('excludeLine3').checked) {
+        includeLines.push();
+        selectedTypes += '신규 노선2,';
+    }
+    if (document.getElementById('excludeLine4').checked) {
+        includeLines.push();
+        selectedTypes += '신규 노선3,';
+    }
+    if (document.getElementById('excludeLine4').checked) {
+        includeLines.push();
+        selectedTypes += '신규 노선4 ';
+    }
+    // 선택된 노선이 없으면 경고
+    if (includeLines.length === 0) {
+        alert('하나 이상의 노선을 선택해주세요.');
+        return;  // 아무것도 선택되지 않은 경우 진행하지 않음
+    }
+
+    // 이후 선택된 노선 정보를 서버로 전송
+    const data = {
+        includeLines: includeLines  // 선택된 노선 정보 전송
+    };
+
+
     if (!isNaN(startLat) && !isNaN(startLng) && !isNaN(endLat) && !isNaN(endLng)) {
-        // 서버에 출발지와 도착지 좌표를 전송하여 가장 가까운 역을 찾음
         const data = {
             startLat: startLat,
             startLng: startLng,
             endLat: endLat,
-            endLng: endLng
+            endLng: endLng,
+            includeLines: includeLines  // 선택된 노선 정보를 서버로 전송
         };
 
         fetch('/find_nearest_stations/', {
@@ -302,17 +361,24 @@ document.getElementById('findNearestStations').addEventListener('click', functio
         .then(response => response.json())
         .then(result => {
             const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <p>출발지 근처 역: ${result.start_station.name} (${result.start_station.line}호선), 거리: ${result.start_station.distance.toFixed(2)}m</p>
-                <p>도착지 근처 역: ${result.end_station.name} (${result.end_station.line}호선), 거리: ${result.end_station.distance.toFixed(2)}m</p>
+            // 새 결과를 담을 컨테이너 생성
+            const newResultDiv = document.createElement('div');
+            newResultDiv.classList.add('result-item');  // 결과별로 구분할 수 있는 클래스 추가
+            const resultId = `result-${Date.now()}`;    // 고유 ID 생성
+            newResultDiv.setAttribute('id', resultId);
+
+            // 선택된 노선 유형을 표시
+            newResultDiv.innerHTML = `
+                <button class="delete-btn" onclick="deleteResult('${resultId}')">X</button>
+                <p><strong>선택 노선: </strong>${selectedTypes}</p>
+                <p>
+                    <span><strong>출발지 근처 역:</strong> ${result.start_station.name} (${result.start_station.line}호선), 거리: ${result.start_station.distance.toFixed(2)}m</span>
+                    &nbsp;&nbsp;<strong>→</strong>&nbsp;&nbsp;
+                    <span><strong>도착지 근처 역:</strong> ${result.end_station.name} (${result.end_station.line}호선), 거리: ${result.end_station.distance.toFixed(2)}m</span>
+                </p>
             `;
-            // 입력 필드 초기화
-            document.getElementById('startLatLng').value = '';
-            document.getElementById('endLatLng').value = '';
-            document.getElementById('startLat').value = '';
-            document.getElementById('startLng').value = '';
-            document.getElementById('endLat').value = '';
-            document.getElementById('endLng').value = '';
+
+
 
             // 최단 경로 요청
             const routeData = {
@@ -331,42 +397,49 @@ document.getElementById('findNearestStations').addEventListener('click', functio
             .then(response => response.json())
             .then(routeResult => {
                 if (routeResult.route) {
-                    let routeInfo = `<p>최단 노선 경로:</p><div>`;
-                    let stationNames = {};  // 각 역 이름의 등장 횟수를 추적
+                    let routeInfo = `<p><strong>최단 노선 경로: </strong>`;  // "최단 노선 경로:" 텍스트로 시작
+                    let routeStations = [];
 
-                    // 역 이름별 등장 횟수 계산
-                    routeResult.route.forEach((station) => {
-                        const currentStationName = station.name.split('(')[0];  // 역 이름 (호선 제외)
-                        if (stationNames[currentStationName]) {
-                            stationNames[currentStationName]++;
-                        } else {
-                            stationNames[currentStationName] = 1;
-                        }
-                    });
-
-                    // 경로를 표시하면서, 환승역(여러 번 등장한 역)에는 파란색 강조 표시
+                    // 최단 경로를 표시하면서, 경로에 포함된 역들을 수집
                     routeResult.route.forEach((station, index) => {
-                        const currentStationName = station.name.split('(')[0];  // 역 이름 (호선 제외)
+                        const stationName = station.name;
+                        const lineInfo = station.line;
 
-                        // 환승역은 파란색으로 표시
-                        if (stationNames[currentStationName] > 1) {
-                            routeInfo += `<span style="color: blue;">${station.name}</span>`;
+                        // 환승역은 파란색으로 굵게 표시
+                        if (station.transfer) {
+                            routeInfo += `<span style="color: blue; font-weight: bold;">${stationName} (${lineInfo}호선)</span>`;
                         } else {
-                            // 그렇지 않으면 그냥 표시
-                            routeInfo += `${station.name}`;
+                            routeInfo += `${stationName} (${lineInfo}호선)`;
                         }
 
                         if (index < routeResult.route.length - 1) {
-                            routeInfo += ' → ';  // 역 사이에 화살표 추가
+                            routeInfo += ' → ';
                         }
+
+                        // 최단 경로에 해당하는 역들만 배열에 저장
+                        routeStations.push(stationName);
                     });
 
-                    routeInfo += '</div>';
-                    resultDiv.innerHTML += routeInfo;
+                    routeInfo += '</p>';  // 최종적으로 </p>로 닫음
+                    newResultDiv.innerHTML += routeInfo;  // 새로운 경로를 해당 결과 항목에 추가
+
+                    // 경로에 포함된 역들만 마커로 지도에 다시 표시
+                    markers.forEach(function(marker) {
+                        if (routeStations.includes(marker.getTitle())) {
+                            marker.setMap(map);  // 경로에 해당하는 역만 지도에 표시
+                        }
+                    });
                 } else {
-                    resultDiv.innerHTML += '<h2>경로를 찾을 수 없습니다.</h2>';
+                    newResultDiv.innerHTML += '<h2>경로를 찾을 수 없습니다.</h2>';
                 }
+            })
+            .catch(error => {
+                console.error('Error fetching nearest stations or route:', error);
+                alert('오류가 발생했습니다.');
             });
+
+            // 결과를 화면에 추가
+            resultDiv.appendChild(newResultDiv);
         })
         .catch(error => {
             console.error('Error fetching nearest stations or route:', error);
@@ -376,7 +449,37 @@ document.getElementById('findNearestStations').addEventListener('click', functio
         alert('출발지와 도착지 좌표를 정확히 입력하세요.');
     }
 });
+// 결과를 삭제하는 함수
+function deleteResult(resultId) {
+    const resultItem = document.getElementById(resultId);
+    if (resultItem) {
+        resultItem.remove();  // 해당 결과를 삭제
+    }
+}
+// 초기화 버튼 클릭 시 입력 필드 및 체크박스 모두 초기화
+document.getElementById('resetButton').addEventListener('click', function() {
+    // 입력 필드 초기화
+    document.getElementById('startLatLng').value = '';
+    document.getElementById('endLatLng').value = '';
+    document.getElementById('startLat').value = '';
+    document.getElementById('startLng').value = '';
+    document.getElementById('endLat').value = '';
+    document.getElementById('endLng').value = '';
+    // 체크박스 초기화
+    document.getElementById('excludeLine1').checked = true;
+    document.getElementById('excludeLine2').checked = false;
+    document.getElementById('excludeLine3').checked = false;
+    document.getElementById('excludeLine4').checked = false;
+    document.getElementById('excludeLine5').checked = false;
+<!--    document.getElementById('excludeLine6').checked = false;-->
+<!--    document.getElementById('excludeLine7').checked = false;-->
+<!--    document.getElementById('excludeLine8').checked = false;-->
+<!--    document.getElementById('excludeLine9').checked = false;-->
 
+    // 결과 화면도 초기화
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = ''; // 결과 표시 영역도 초기화
+});
 function getCSRFToken() {
     let csrfToken = null;
     const cookies = document.cookie.split(';');
