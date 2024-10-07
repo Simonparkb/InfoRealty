@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Map</title>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268&libraries=services"></script>
     <style>
         /* 기본 스타일: PC에서 적용될 기본 설정 */
         #map {
@@ -95,27 +95,32 @@
             <label><input type="checkbox" id="excludeLine4" value="4" checked> 신규노선3</label>
             <label><input type="checkbox" id="excludeLine5" value="5" checked> 신규노선4</label>
         </p>
+        <p><strong>거주하고 계신 지역을 입력해주세요!</strong></p>
     <div class="coordinates-input">
-        <p><strong>지도에서 출발지와 도착지를 선택해주세요.</strong></p>
 
-        <label>출발지:
-            <input type="text" id="startLatLng" readonly placeholder="출발지 좌표 클릭">
+        <label>
+
+
+            <input type="text" id="startLatLng" readonly placeholder="출발지 위치 선택">
             <input type="hidden" id="startLat">
             <input type="hidden" id="startLng">
+            <button id="startAddressBtn">주소로 찾기</button>
         </label>
         <br>
+        <label>
 
-        <label>도착지:
-            <input type="text" id="endLatLng" readonly placeholder="도착지 좌표 클릭">
+            <input type="text" id="endLatLng" readonly placeholder="도착지 위치 선택">
             <input type="hidden" id="endLat">
             <input type="hidden" id="endLng">
+            <button id="endAddressBtn">주소로 찾기</button>
         </label>
         <br>
         <button id="findNearestStations">최단 경로 찾기</button>
         <button id="resetButton">초기화</button>
     </div>
-
     <div id="result"></div>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
 {% load static %}
     <script>
     // 출발지 입력 필드에 포커스
@@ -137,6 +142,7 @@
 
 
     var map = new kakao.maps.Map(mapContainer, mapOption);
+    var geocoder = new kakao.maps.services.Geocoder(); // 주소-좌표 변환 객체 생성
 <!--    mapContainer.style.opacity = "0.9"; // 투명도 설정 (0.0~1.0)-->
     // 지도 타입 정보를 가지고 있을 객체입니다
     // map.addOverlayMapTypeId 함수로 추가된 지도 타입은
@@ -217,21 +223,65 @@
         map.setCenter(moveLatLon); // 파라미터로 전달받은 좌표로 지도 중심 이동
     }
 
+    // 출발지 주소 검색 버튼 클릭 시 좌표 입력
+    document.getElementById('startAddressBtn').addEventListener('click', function() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                geocoder.addressSearch(data.address, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                        document.getElementById('startLatLng').value = coords.getLat() + ', ' + coords.getLng();
+                        document.getElementById('startLat').value = coords.getLat();
+                        document.getElementById('startLng').value = coords.getLng();
+                    }
+                });
+            }
+        }).open();
+    });
+
+    // 도착지 주소 검색 버튼 클릭 시 좌표 입력
+    document.getElementById('endAddressBtn').addEventListener('click', function() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                geocoder.addressSearch(data.address, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                        document.getElementById('endLatLng').value = coords.getLat() + ', ' + coords.getLng();
+                        document.getElementById('endLat').value = coords.getLat();
+                        document.getElementById('endLng').value = coords.getLng();
+                    }
+                });
+            }
+        }).open();
+    });
+
+
     // 마우스 클릭 이벤트
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         var latlng = mouseEvent.latLng;
 
         // 클릭할 때마다 출발지와 도착지를 번갈아 설정
         if (clickCount % 2 === 0) {
+            // 출발지 좌표 설정
             document.getElementById('startLatLng').value = latlng.getLat() + ', ' + latlng.getLng();
             document.getElementById('startLat').value = latlng.getLat();
             document.getElementById('startLng').value = latlng.getLng();
-            focusStartField(); // 출발지 필드에 포커스
+
+            // 모바일과 데스크탑 모두에서 필드에 포커스
+            setTimeout(function() {
+                document.getElementById('startLatLng').focus();
+            }, 10); // 약간의 지연시간을 줘서 브라우저 렌더링 문제 방지
+
         } else {
+            // 도착지 좌표 설정
             document.getElementById('endLatLng').value = latlng.getLat() + ', ' + latlng.getLng();
             document.getElementById('endLat').value = latlng.getLat();
             document.getElementById('endLng').value = latlng.getLng();
-            focusEndField(); // 도착지 필드에 포커스
+
+            // 모바일과 데스크탑 모두에서 필드에 포커스
+            setTimeout(function() {
+                document.getElementById('endLatLng').focus();
+            }, 10); // 약간의 지연시간을 줘서 브라우저 렌더링 문제 방지
         }
         clickCount++;
     });
