@@ -231,14 +231,20 @@
                         document.getElementById('startLat').value = coords.getLat();
                         document.getElementById('startLng').value = coords.getLng();
 
-                        // Focus only the main input field
+                        // Focus the main input field
                         setTimeout(function() {
                             document.getElementById('startLatLng').focus();
                         }, 10); // Apply a small delay to avoid rendering issues
+
+                        // Close the Postcode window manually if necessary
+                        var iframe = document.querySelector("iframe");
+                        if (iframe) {
+                            iframe.parentNode.removeChild(iframe);  // Removes the iframe if it stays open
+                        }
                     }
                 });
             }
-        }).close();
+        }).open();
     });
 
     // 도착지 주소 검색 버튼 클릭 시 좌표 입력
@@ -252,14 +258,20 @@
                         document.getElementById('endLat').value = coords.getLat();
                         document.getElementById('endLng').value = coords.getLng();
 
-                        // Focus only the main input field
+                        // Focus the main input field
                         setTimeout(function() {
                             document.getElementById('endLatLng').focus();
                         }, 10); // Apply a small delay to avoid rendering issues
+
+                        // Close the Postcode window manually if necessary
+                        var iframe = document.querySelector("iframe");
+                        if (iframe) {
+                            iframe.parentNode.removeChild(iframe);  // Removes the iframe if it stays open
+                        }
                     }
                 });
             }
-        }).close();
+        }).open();
     });
 
     // 마우스 클릭 이벤트
