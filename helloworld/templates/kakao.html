@@ -224,23 +224,18 @@
     document.getElementById('startAddressBtn').addEventListener('click', function() {
         new daum.Postcode({
             oncomplete: function(data) {
-                console.log('Address selected:', data.address); // Debugging statement
-                    geocoder.addressSearch(address, function(result, status) {
-                        if (status === kakao.maps.services.Status.OK) {
-                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                geocoder.addressSearch(data.address, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                        document.getElementById('startLatLng').value = coords.getLat() + ', ' + coords.getLng();
+                        document.getElementById('startLat').value = coords.getLat();
+                        document.getElementById('startLng').value = coords.getLng();
 
-                            // 팝업 창 열기
-                            var popup = window.open("", "CoordinatePopup", "width=400,height=200");
-
-                            // 팝업 창에 좌표 메시지 출력
-                            popup.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>좌표 결과</title></head><body>');
-                            popup.document.write('<h3>변환된 좌표</h3>');
-                            popup.document.write('<p>위도: ' + coords.getLat() + '</p>');
-                            popup.document.write('<p>경도: ' + coords.getLng() + '</p>');
-                            popup.document.write('</body></html>');
-                        } else {
-                            alert('주소를 좌표로 변환하는데 실패했습니다.');
-                        }
+                        // Focus only the main input field
+                        setTimeout(function() {
+                            document.getElementById('startLatLng').focus();
+                        }, 10); // Apply a small delay to avoid rendering issues
+                    }
                 });
             }
         }).open();
@@ -250,7 +245,6 @@
     document.getElementById('endAddressBtn').addEventListener('click', function() {
         new daum.Postcode({
             oncomplete: function(data) {
-                console.log('Address selected:', data.address); // Debugging statement
                 geocoder.addressSearch(data.address, function(result, status) {
                     if (status === kakao.maps.services.Status.OK) {
                         var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
@@ -258,17 +252,16 @@
                         document.getElementById('endLat').value = coords.getLat();
                         document.getElementById('endLng').value = coords.getLng();
 
-                        // Focus the main input field
+                        // Focus only the main input field
                         setTimeout(function() {
                             document.getElementById('endLatLng').focus();
-                        }, 10); // Slight delay to avoid rendering issues
-                    } else {
-                        console.error('Geocoding failed. Status:', status); // Error handling
+                        }, 10); // Apply a small delay to avoid rendering issues
                     }
                 });
             }
         }).open();
     });
+
     // 마우스 클릭 이벤트
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         var latlng = mouseEvent.latLng;
