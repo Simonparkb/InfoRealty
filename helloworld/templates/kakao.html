@@ -228,16 +228,9 @@
                 geocoder.addressSearch(data.address, function(result, status) {
                     if (status === kakao.maps.services.Status.OK) {
                         var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
-                        // 좌표 입력 필드에 값 설정
                         document.getElementById('startLatLng').value = coords.getLat() + ', ' + coords.getLng();
                         document.getElementById('startLat').value = coords.getLat();
                         document.getElementById('startLng').value = coords.getLng();
-
-                        // 좌표 입력 필드에 포커스
-                        setTimeout(function() {
-                            document.getElementById('startLatLng').focus();
-                        }, 10); // 약간의 지연시간
                     }
                 });
             }
@@ -251,16 +244,9 @@
                 geocoder.addressSearch(data.address, function(result, status) {
                     if (status === kakao.maps.services.Status.OK) {
                         var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
-                        // 좌표 입력 필드에 값 설정
                         document.getElementById('endLatLng').value = coords.getLat() + ', ' + coords.getLng();
                         document.getElementById('endLat').value = coords.getLat();
                         document.getElementById('endLng').value = coords.getLng();
-
-                        // 좌표 입력 필드에 포커스
-                        setTimeout(function() {
-                            document.getElementById('endLatLng').focus();
-                        }, 10); // 약간의 지연시간
                     }
                 });
             }
@@ -282,7 +268,7 @@
             // 모바일과 데스크탑 모두에서 필드에 포커스
             setTimeout(function() {
                 document.getElementById('startLatLng').focus();
-            }, 10); // 약간의 지연시간
+            }, 10); // 약간의 지연시간을 줘서 브라우저 렌더링 문제 방지
 
         } else {
             // 도착지 좌표 설정
@@ -293,7 +279,7 @@
             // 모바일과 데스크탑 모두에서 필드에 포커스
             setTimeout(function() {
                 document.getElementById('endLatLng').focus();
-            }, 10); // 약간의 지연시간
+            }, 10); // 약간의 지연시간을 줘서 브라우저 렌더링 문제 방지
         }
         clickCount++;
     });
