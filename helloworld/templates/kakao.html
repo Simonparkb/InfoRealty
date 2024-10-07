@@ -226,27 +226,22 @@
         new daum.Postcode({
             oncomplete: function(data) {
                 console.log('Address selected:', data.address); // Debugging statement
-                    geocoder.addressSearch(address, function(result, status) {
-                        if (status === kakao.maps.services.Status.OK) {
-                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                var address = data.address; // 선택한 주소를 저장
 
-                            // 팝업 창 열기
-                            var popup = window.open("", "CoordinatePopup", "width=400,height=200");
+                // 주소를 좌표로 변환
+                geocoder.addressSearch(address, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
 
-                            // 팝업 창에 좌표 메시지 출력
-                            popup.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>좌표 결과</title></head><body>');
-                            popup.document.write('<h3>변환된 좌표</h3>');
-                            popup.document.write('<p>위도: ' + coords.getLat() + '</p>');
-                            popup.document.write('<p>경도: ' + coords.getLng() + '</p>');
-                            popup.document.write('</body></html>');
-                        } else {
-                            alert('주소를 좌표로 변환하는데 실패했습니다.');
-                        }
+                        // 브라우저 메세지(alert)로 좌표 출력
+                        alert('변환된 좌표\n위도: ' + coords.getLat() + '\n경도: ' + coords.getLng());
+                    } else {
+                        alert('주소를 좌표로 변환하는데 실패했습니다.');
+                    }
                 });
             }
         }).open();
     });
-
     // 도착지 주소 검색 버튼 클릭 시 좌표 입력
     document.getElementById('endAddressBtn').addEventListener('click', function() {
         new daum.Postcode({
