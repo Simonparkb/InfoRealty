@@ -236,7 +236,8 @@
                         // 브라우저 메세지(alert)로 좌표 출력
                         alert('변환된 좌표\n위도: ' + coords.getLat() + '\n경도: ' + coords.getLng());
                     } else {
-                        alert('주소를 좌표로 변환하는데 실패했습니다.');
+
+                        alert(address + '주소를 좌표로 변환하는데 실패했습니다.');
                     }
                 });
             }
