@@ -221,13 +221,11 @@
         map.setCenter(moveLatLon); // 파라미터로 전달받은 좌표로 지도 중심 이동
     }
 
-        // 주소 검색 버튼 클릭 시
-        document.getElementById('searchAddressBtn').addEventListener('click', function() {
-            new daum.Postcode({
-                oncomplete: function(data) {
-                    var address = data.address;
-
-                    // 주소를 좌표로 변환
+    // 출발지 주소 검색 버튼 클릭 시 좌표 입력
+    document.getElementById('startAddressBtn').addEventListener('click', function() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                console.log('Address selected:', data.address); // Debugging statement
                     geocoder.addressSearch(address, function(result, status) {
                         if (status === kakao.maps.services.Status.OK) {
                             var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
@@ -244,10 +242,10 @@
                         } else {
                             alert('주소를 좌표로 변환하는데 실패했습니다.');
                         }
-                    });
-                }
-            }).open();
-        });
+                });
+            }
+        }).open();
+    });
 
     // 도착지 주소 검색 버튼 클릭 시 좌표 입력
     document.getElementById('endAddressBtn').addEventListener('click', function() {
