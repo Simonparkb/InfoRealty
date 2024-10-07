@@ -268,6 +268,8 @@
             // 모바일과 데스크탑 모두에서 필드에 포커스
             setTimeout(function() {
                 document.getElementById('startLatLng').focus();
+                document.getElementById('startLat').focus();
+                document.getElementById('startLng').focus();
             }, 10); // 약간의 지연시간을 줘서 브라우저 렌더링 문제 방지
 
         } else {
@@ -279,6 +281,8 @@
             // 모바일과 데스크탑 모두에서 필드에 포커스
             setTimeout(function() {
                 document.getElementById('endLatLng').focus();
+                document.getElementById('endLat').focus();
+                document.getElementById('endLng').focus();
             }, 10); // 약간의 지연시간을 줘서 브라우저 렌더링 문제 방지
         }
         clickCount++;
