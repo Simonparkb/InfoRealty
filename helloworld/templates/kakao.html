@@ -100,19 +100,17 @@
 
         <label>
 
-
-            <input type="text" id="startLatLng" readonly placeholder="출발지 위치 선택">
+            <button id="startAddressBtn">출발지 주소로 찾기</button>
+            <input type="text" id="startLatLng" readonly placeholder="출발지 좌표">
             <input type="hidden" id="startLat">
             <input type="hidden" id="startLng">
-            <button id="startAddressBtn">주소로 찾기</button>
         </label>
         <br>
         <label>
-
-            <input type="text" id="endLatLng" readonly placeholder="도착지 위치 선택">
+            <button id="endAddressBtn">도착지 주소로 찾기</button>
+            <input type="text" id="endLatLng" readonly placeholder="도착지 좌표">
             <input type="hidden" id="endLat">
             <input type="hidden" id="endLng">
-            <button id="endAddressBtn">주소로 찾기</button>
         </label>
         <br>
         <button id="findNearestStations">최단 경로 찾기</button>
