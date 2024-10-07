@@ -74,28 +74,38 @@
         .delete-btn:hover {
             background-color: #ff0000;  /* 버튼 호버 효과 */
         }
+    .map_wrap {position:relative;width:100%;height:500px;}
+    #menu_wrap {position:absolute;top:0;left:0;bottom:0;width:100px;height:250px;margin:10px 0 30px 10px;padding:5px;overflow-y:auto;background:rgba(255, 255, 255, 1);z-index: 1;border-radius: 10px;}
+    .map_options label, .map_routes label {
+        display: block;
+        margin: 5px 0;
+        font-size: 10px; /* Reducing font size for options */
+    }
     </style>
 </head>
 <body>
-    <h1></h1>
-    <div id="map"></div>
-        <p>
-            <label>지도 정보:</label>
-            <input type="checkbox" id="chkUseDistrict" onclick="setOverlayMapTypeId()" /> 지적편집도 정보 보기
-            <input type="checkbox" id="chkTerrain" onclick="setOverlayMapTypeId()" /> 지형정보 보기
-            <input type="checkbox" id="chkTraffic" onclick="setOverlayMapTypeId()" /> 교통정보 보기
-            <input type="checkbox" id="chkUseROADVIEW" onclick="setOverlayMapTypeId()" /> 로드뷰 정보 보기
-            <input type="checkbox" id="chkBicycle" onclick="setOverlayMapTypeId()" /> 자전거도로 정보 보기
-        </p>
-        <p>
-            <label>노선 선택:</label>
-            <label><input type="checkbox" id="excludeLine1" value="1" checked> 기본노선</label>
-            <label><input type="checkbox" id="excludeLine2" value="2" checked> 신규노선1</label>
-            <label><input type="checkbox" id="excludeLine3" value="3" checked> 신규노선2</label>
-            <label><input type="checkbox" id="excludeLine4" value="4" checked> 신규노선3</label>
-            <label><input type="checkbox" id="excludeLine5" value="5" checked> 신규노선4</label>
-        </p>
-        <p><strong>거주하고 계신 지역을 입력해주세요!</strong></p>
+    <div class="map_wrap">
+        <div id="map" style="width:100%;height:100%;"></div>
+        <div id="menu_wrap">
+            <div class="map_options">
+                <p><label>지도 정보:</label></p>
+                <label><input type="checkbox" id="chkUseDistrict" onclick="setOverlayMapTypeId()" /> 지적편집도</label>
+                <label><input type="checkbox" id="chkTerrain" onclick="setOverlayMapTypeId()" /> 지형정보</label>
+                <label><input type="checkbox" id="chkTraffic" onclick="setOverlayMapTypeId()" /> 교통정보</label>
+                <label><input type="checkbox" id="chkUseROADVIEW" onclick="setOverlayMapTypeId()" /> 로드뷰</label>
+                <label><input type="checkbox" id="chkBicycle" onclick="setOverlayMapTypeId()" /> 자전거도로</label>
+            </div>
+            <div class="map_routes">
+                <p><label>노선 선택:</label></p>
+                <label><input type="checkbox" id="excludeLine1" value="1" checked> 기본노선</label>
+                <label><input type="checkbox" id="excludeLine2" value="2" checked> 신규노선1</label>
+                <label><input type="checkbox" id="excludeLine3" value="3" checked> 신규노선2</label>
+                <label><input type="checkbox" id="excludeLine4" value="4" checked> 신규노선3</label>
+                <label><input type="checkbox" id="excludeLine5" value="5" checked> 신규노선4</label>
+            </div>
+        </div>
+    </div>
+    <p><strong>거주하고 계신 지역을 입력해주세요!</strong></p>
     <div class="coordinates-input">
         <label>
             <input type="text" id="startLatLng" readonly placeholder="출발지 위치 선택">
