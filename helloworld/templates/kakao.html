@@ -99,9 +99,6 @@
                 <p><label>노선 선택:</label></p>
                 <label><input type="checkbox" id="excludeLine1" value="1" checked> 기본노선</label>
                 <label><input type="checkbox" id="excludeLine2" value="2" checked> 신규노선1</label>
-                <label><input type="checkbox" id="excludeLine3" value="3" checked> 신규노선2</label>
-                <label><input type="checkbox" id="excludeLine4" value="4" checked> 신규노선3</label>
-                <label><input type="checkbox" id="excludeLine5" value="5" checked> 신규노선4</label>
             </div>
         </div>
     </div>
@@ -416,18 +413,6 @@ document.getElementById('findNearestStations').addEventListener('click', functio
         includeLines.push('Sinbundang', 'Sinbundang');
         selectedTypes += '신규 노선1,';
     }
-    if (document.getElementById('excludeLine3').checked) {
-        includeLines.push();
-        selectedTypes += '신규 노선2,';
-    }
-    if (document.getElementById('excludeLine4').checked) {
-        includeLines.push();
-        selectedTypes += '신규 노선3,';
-    }
-    if (document.getElementById('excludeLine4').checked) {
-        includeLines.push();
-        selectedTypes += '신규 노선4 ';
-    }
     // 선택된 노선이 없으면 경고
     if (includeLines.length === 0) {
         alert('하나 이상의 노선을 선택해주세요.');
@@ -587,13 +572,6 @@ document.getElementById('resetButton').addEventListener('click', function() {
     // 체크박스 초기화
     document.getElementById('excludeLine1').checked = true;
     document.getElementById('excludeLine2').checked = false;
-    document.getElementById('excludeLine3').checked = false;
-    document.getElementById('excludeLine4').checked = false;
-    document.getElementById('excludeLine5').checked = false;
-<!--    document.getElementById('excludeLine6').checked = false;-->
-<!--    document.getElementById('excludeLine7').checked = false;-->
-<!--    document.getElementById('excludeLine8').checked = false;-->
-<!--    document.getElementById('excludeLine9').checked = false;-->
 
     // 결과 화면도 초기화
     const resultDiv = document.getElementById('result');
