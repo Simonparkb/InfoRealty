@@ -126,24 +126,24 @@
         .then(response => response.json())
         .then(routeResult => {
             if (routeResult.route) {
-                let routeInfo = '';
+<!--                let routeInfo = '';-->
 
-                routeResult.route.forEach((station, index) => {
-                    const stationName = station.name;
-                    const lineInfo = station.line;
+<!--                routeResult.route.forEach((station, index) => {-->
+<!--                    const stationName = station.name;-->
+<!--                    const lineInfo = station.line;-->
 
-                    if (station.transfer) {
-                        routeInfo += `<span class="transfer">${stationName} (${lineInfo}호선)</span>`;
-                    } else {
-                        routeInfo += `<span>${stationName} (${lineInfo}호선)</span>`;
-                    }
+<!--                    if (station.transfer) {-->
+<!--                        routeInfo += `<span class="transfer">${stationName} (${lineInfo}호선)</span>`;-->
+<!--                    } else {-->
+<!--                        routeInfo += `<span>${stationName} (${lineInfo}호선)</span>`;-->
+<!--                    }-->
 
-                    if (index < routeResult.route.length - 1) {
-                        routeInfo += ' → ';
-                    }
-                });
+<!--                    if (index < routeResult.route.length - 1) {-->
+<!--                        routeInfo += ' → ';-->
+<!--                    }-->
+<!--                });-->
 
-                document.getElementById('shortestRoute').innerHTML = routeInfo;
+<!--                document.getElementById('shortestRoute').innerHTML = routeInfo;-->
 
                 // Display total time
                 document.getElementById('totalTime').innerHTML = `<strong>총 예상 소요 시간: </strong>${routeResult.total_time.toFixed(1)} 분`;
