@@ -53,6 +53,24 @@
             color: blue;
             font-weight: bold;
         }
+
+        /* 모바일 화면을 위한 미디어 쿼리 */
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                padding: 20px 0;
+            }
+            .info-container {
+                flex-direction: column; /* 수직 배치로 변경 */
+                gap: 10px; /* 요소 사이 간격 축소 */
+            }
+            .info-box h2 {
+                font-size: 1rem;
+            }
+            p, .route-info span {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
