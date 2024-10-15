@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서비스 정보</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .info-container {
+            width: 90%;
+            max-width: 1200px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+        .info-box {
+            flex: 1;
+            text-align: center;
+        }
+        .info-box h2 {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1rem;
+            color: #333;
+        }
+        .route-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .route-info span {
+            font-size: 0.9rem;
+        }
+        .route-info span.transfer {
+            color: blue;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="info-container">
+    <div class="info-box">
+        <h2>출발지 정보</h2>
+        <p id="departureInfo"></p>
+    </div>
+
+    <div class="info-box">
+        <h2>도착지 정보</h2>
+        <p id="destinationInfo"></p>
+    </div>
+
+    <div class="info-box">
+        <h2>최단 경로</h2>
+        <div id="shortestRoute" class="route-info"></div> <!-- This is where the shortest route will be displayed -->
+        <p id="totalTime"></p> <!-- This is where the total time will be displayed -->
+    </div>
+</div>
+
+<script>
+    // Retrieve stored data
+    const departureData = JSON.parse(localStorage.getItem('departureData'));
+    const destinationData = JSON.parse(localStorage.getItem('destinationData'));
+
+    // Display the departure and destination data
+    if (departureData) {
+        document.getElementById('departureInfo').innerHTML =
+            `주소: ${departureData.address}<br>${departureData.nearestStation}`;
+    }
+
+    if (destinationData) {
+        document.getElementById('destinationInfo').innerHTML =
+            `주소: ${destinationData.address}<br>${destinationData.nearestStation}`;
+    }
+
+    // Fetch the shortest route using the nearest stations
+    if (departureData && destinationData) {
+        const routeData = {
+            startStation: departureData.nearestStation.split(' ')[3], // Extract the station name from the string
+            endStation: destinationData.nearestStation.split(' ')[3]  // Extract the station name from the string
+        };
+        fetch('/find_shortest_route/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(routeData)
+        })
+        .then(response => response.json())
+        .then(routeResult => {
+            if (routeResult.route) {
+                let routeInfo = '';
+
+                routeResult.route.forEach((station, index) => {
+                    const stationName = station.name;
+                    const lineInfo = station.line;
+
+                    if (station.transfer) {
+                        routeInfo += `<span class="transfer">${stationName} (${lineInfo}호선)</span>`;
+                    } else {
+                        routeInfo += `<span>${stationName} (${lineInfo}호선)</span>`;
+                    }
+
+                    if (index < routeResult.route.length - 1) {
+                        routeInfo += ' → ';
+                    }
+                });
+
+                document.getElementById('shortestRoute').innerHTML = routeInfo;
+
+                // Display total time
+                document.getElementById('totalTime').innerHTML = `<strong>총 예상 소요 시간: </strong>${routeResult.total_time.toFixed(1)} 분`;
+            } else {
+                document.getElementById('shortestRoute').innerHTML = '<p>경로를 찾을 수 없습니다.</p>';
+                document.getElementById('totalTime').innerHTML = '';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching the shortest route:', error);
+            document.getElementById('shortestRoute').innerHTML = '<p>오류가 발생했습니다.</p>';
+            document.getElementById('totalTime').innerHTML = '';
+        });
+    }
+
+    // Function to get CSRF token from cookies
+    function getCSRFToken() {
+        let csrfToken = null;
+        const cookies = document.cookie.split(';');
+        cookies.forEach(cookie => {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') {
+                csrfToken = value;
+            }
+        });
+        return csrfToken;
+    }
+</script>
+
+</body>
+</html>
