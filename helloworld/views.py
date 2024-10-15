@@ -32,9 +32,15 @@ line_travel_times = {
 # 환승 시간을 정의
 transfer_time = 5.0  # 환승 시간 5분
 
-def index(request):
-    return render(request, 'index.html')
+def departures(request):
+    return render(request, 'departures.html')
 
+
+def arrivals(request):
+    return render(request, 'arrivals.html')
+
+def services(request):
+    return render(request, 'services.html')
 
 def log_activity(user, action):
     ActivityLog.objects.create(user=user, action=action)
@@ -154,7 +160,7 @@ def find_shortest_route(request):
             # 출발역과 도착역을 정확히 매칭 (노선 정보 포함)
             start_station_with_line = next((n for n in subway_graph.nodes if start_station in n), None)
             end_station_with_line = next((n for n in subway_graph.nodes if end_station in n), None)
-
+            print(start_station_with_line,end_station_with_line)
             if not start_station_with_line:
                 return JsonResponse({'error': f'출발 역 "{start_station}"을(를) 찾을 수 없습니다.'}, status=404)
 
@@ -238,12 +244,26 @@ def calculate_transfer_time():
 
 # 두 지점 간의 거리를 계산하는 함수 (Haversine 공식을 사용)
 def calculate_distance(lat1, lon1, lat2, lon2):
-    R = 6371  # 지구 반경 (킬로미터)
-    dLat = math.radians(lat2 - lat1)
-    dLon = math.radians(lon2 - lon1)
-    a = math.sin(dLat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dLon / 2) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c * 1000  # 거리 (미터)
+    try:
+        # 좌표 값이 문자열일 수 있으니 float으로 변환
+        lat1 = float(lat1)
+        lon1 = float(lon1)
+        lat2 = float(lat2)
+        lon2 = float(lon2)
+
+        R = 6371  # 지구 반경 (킬로미터)
+        dLat = math.radians(lat2 - lat1)
+        dLon = math.radians(lon2 - lon1)
+        a = math.sin(dLat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dLon / 2) ** 2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        distance = R * c * 1000  # 거리 계산 (미터 단위)
+        return distance
+    except ValueError as e:
+        print(f"ValueError calculating distance: {e}")
+        return float('inf')  # 오류 시 매우 큰 값 반환
+    except Exception as e:
+        print(f"Error calculating distance: {e}")
+        return float('inf')
 
 # 좌표로부터 가장 가까운 역을 찾는 함수
 def calculate_nearest_station(lat, lng, stations):
@@ -255,6 +275,11 @@ def calculate_nearest_station(lat, lng, stations):
             min_distance = distance
             nearest_station = station
     return nearest_station, min_distance
+
+import logging
+from django.http import JsonResponse
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def find_nearest_stations(request):
@@ -270,45 +295,40 @@ def find_nearest_stations(request):
             if start_lat is None or start_lng is None or end_lat is None or end_lng is None:
                 return JsonResponse({'error': '좌표 정보가 필요합니다.'}, status=400)
 
-            if not include_lines:
-                return JsonResponse({'error': '선택된 노선이 없습니다.'}, status=400)
-
-            # CSV 파일에서 역 데이터를 불러옴
+            # 역 데이터 불러오기
             stations = load_stations_from_csv()
 
-            # 선택된 노선에 포함된 역들만 필터링
+            # 선택된 노선 필터링
             filtered_stations = [station for station in stations if station['line'] in include_lines]
 
             if not filtered_stations:
                 return JsonResponse({'error': '선택된 노선에 해당하는 사용 가능한 역이 없습니다.'}, status=404)
 
-            # 출발지와 도착지 근처에서 가장 가까운 역 찾기
+            # 출발지 근처에서 가장 가까운 역 찾기
             nearest_start, start_distance = calculate_nearest_station(start_lat, start_lng, filtered_stations)
             nearest_end, end_distance = calculate_nearest_station(end_lat, end_lng, filtered_stations)
 
             # 걷는 시간 계산 (100미터 당 70초)
-            walk_time_per_meter = 70 / 100  # 초/미터
-            start_walk_time = (start_distance * walk_time_per_meter) / 60  # 분으로 변환
-            end_walk_time = (end_distance * walk_time_per_meter) / 60  # 분으로 변환
+            walk_time_per_meter = 70 / 100
+            start_walk_time = (start_distance * walk_time_per_meter) / 60
+            end_walk_time = (end_distance * walk_time_per_meter) / 60
 
             return JsonResponse({
                 'start_station': {
                     'name': nearest_start['name'],
                     'line': nearest_start['line'],
                     'distance': start_distance,
-                    'walk_time': round(start_walk_time, 1)  # 소수점 첫째 자리까지
+                    'walk_time': round(start_walk_time, 1)
                 },
                 'end_station': {
                     'name': nearest_end['name'],
                     'line': nearest_end['line'],
                     'distance': end_distance,
-                    'walk_time': round(end_walk_time, 1)  # 소수점 첫째 자리까지
+                    'walk_time': round(end_walk_time, 1)
                 }
             })
-
-        except json.JSONDecodeError:
-            return JsonResponse({'error': '잘못된 요청입니다.'}, status=400)
         except Exception as e:
-            return JsonResponse({'error': f'서버 오류: {str(e)}'}, status=500)
+            logger.error(f"Error in find_nearest_stations: {e}")
+            return JsonResponse({'error': '서버 오류가 발생했습니다.'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
