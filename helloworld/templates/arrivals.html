@@ -107,9 +107,8 @@
 <div class="search-container">
     <div class="input-group">
         <input type="text" id="startLocation" placeholder="도착지 주소 입력" readonly>
-        <button id="nextPageBtn" disabled>결과보기</button>
+        <button id="nextPageBtn" disabled>경로확인</button>
     </div>
-
     <!-- 위도, 경도 표시 영역 -->
     <div id="result"></div>
 
@@ -152,7 +151,6 @@
                     if (status === kakao.maps.services.Status.OK) {
                         var lat = parseFloat(result[0].y);
                         var lng = parseFloat(result[0].x);
-
                         // 위도, 경도를 텍스트로 표시
 <!--                        resultDiv.innerHTML = `<p>위도: ${lat} <br> 경도: ${lng}</p>`;-->
 <!--                        resultDiv.style.display = 'block';-->
@@ -185,76 +183,53 @@
         element_layer.classList.add('open');
     }
 
-    function findNearestStation(lat, lng) {
-        fetch('/find_nearest_stations/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({
-                startLat: lat,
-                startLng: lng,
-                endLat: lat,  // 출발지만 사용
-                endLng: lng,
-                includeLines: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-            })
+function findNearestStation(lat, lng) {
+    fetch('/find_nearest_stations/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            startLat: lat,
+            startLng: lng,
+            includeLines: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.start_station) {
-                nearestStationDiv.innerHTML = `
-                    <p>가장 가까운 역: ${data.start_station.name} (${data.start_station.line}호선)</p>
-                    <p>거리: ${data.start_station.distance.toFixed(2)}m, 예상 걷는 시간: ${data.start_station.walk_time}분</p>
-                `;
-                nearestStationDiv.style.display = 'block';
-            } else {
-                nearestStationDiv.innerHTML = '<p>가까운 역을 찾을 수 없습니다.</p>';
-                nearestStationDiv.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            nearestStationDiv.innerHTML = '<p>오류가 발생했습니다.</p>';
-            nearestStationDiv.style.display = 'block';
-        });
-    }
-    function findNearestStation(lat, lng) {
-        fetch('/find_nearest_stations/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({
-                startLat: lat,
-                startLng: lng,
-                includeLines: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // nearest_stations 데이터를 순회하며 각 호선별로 가장 가까운 역 출력
-            if (data.nearest_stations) {
-                let stationsInfo = '';
-                for (const [line, stationInfo] of Object.entries(data.nearest_stations)) {
-                    // 원하는 형식으로 역 정보 구성
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.nearest_stations) {
+            let stationsInfo = '';
+            const stations = Object.entries(data.nearest_stations)
+                .filter(([line, stationInfo]) => stationInfo.distance <= 1000) // 1km 이하 거리 필터링
+                .sort((a, b) => a[1].distance - b[1].distance) // 거리 기준으로 정렬
+                .slice(0, 3); // 최대 3개의 역만 선택
+
+            if (stations.length > 0) {
+                stations.forEach(([line, stationInfo]) => {
+
                     stationsInfo += `
+
                       <p>${stationInfo.station} (${line}호선), 거리: ${stationInfo.distance.toFixed(2)}m, 걷는 시간: 약 ${stationInfo.walk_time.toFixed(1)}분</p>
                     `;
-                }
-                nearestStationDiv.innerHTML = stationsInfo;
-                nearestStationDiv.style.display = 'block';
+                });
             } else {
-                nearestStationDiv.innerHTML = '<p>가까운 역을 찾을 수 없습니다.</p>';
-                nearestStationDiv.style.display = 'block';
+                stationsInfo = '<p>반경 1km 내에 가까운 역을 찾을 수 없습니다.</p>';
             }
-        })
-        .catch(error => {
-            console.error('Error fetching nearest stations:', error);
-            nearestStationDiv.innerHTML = '<p>오류가 발생했습니다.</p>';
+
+            nearestStationDiv.innerHTML = stationsInfo;
             nearestStationDiv.style.display = 'block';
-        });
-    }
+        } else {
+            nearestStationDiv.innerHTML = '<p>가까운 역을 찾을 수 없습니다.</p>';
+            nearestStationDiv.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching nearest stations:', error);
+        nearestStationDiv.innerHTML = '<p>오류가 발생했습니다.</p>';
+        nearestStationDiv.style.display = 'block';
+    });
+}
     function getCSRFToken() {
         let csrfToken = null;
         const cookies = document.cookie.split(';');
