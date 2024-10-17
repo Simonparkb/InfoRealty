@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>서비스 정보</title>
+    <title>결과보기</title>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -11,7 +11,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: auto;
             margin: 0;
         }
         .info-container {
@@ -22,9 +22,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
             display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
             gap: 20px;
         }
         .info-box {
@@ -42,8 +40,7 @@
         }
         .route-info {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
             gap: 5px;
         }
         .route-info span {
@@ -53,6 +50,23 @@
             color: blue;
             font-weight: bold;
         }
+        .route-card {
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4CAF50; /* 강조선 추가 */
+        }
+        .route-card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: black;
+            margin-bottom: 10px;
+        }
+        .route-card p {
+            margin: 5px 0;
+        }
 
         /* 모바일 화면을 위한 미디어 쿼리 */
         @media (max-width: 768px) {
@@ -61,8 +75,8 @@
                 padding: 20px 0;
             }
             .info-container {
-                flex-direction: column; /* 수직 배치로 변경 */
-                gap: 10px; /* 요소 사이 간격 축소 */
+                flex-direction: column;
+                gap: 10px;
             }
             .info-box h2 {
                 font-size: 1rem;
@@ -71,25 +85,25 @@
                 font-size: 0.8rem;
             }
         }
+
     </style>
 </head>
 <body>
 
 <div class="info-container">
-    <div class="info-box">
-        <h2>출발지 정보</h2>
-        <p id="departureInfo"></p>
-    </div>
+<!--    <div class="info-box">-->
+<!--        <h2>출발지 정보</h2>-->
+<!--        <p id="departureInfo"></p>-->
+<!--    </div>-->
+
+<!--    <div class="info-box">-->
+<!--        <h2>도착지 정보</h2>-->
+<!--        <p id="destinationInfo"></p>-->
+<!--    </div>-->
 
     <div class="info-box">
-        <h2>도착지 정보</h2>
-        <p id="destinationInfo"></p>
-    </div>
-
-    <div class="info-box">
-        <h2>최단 경로</h2>
-        <div id="shortestRoute" class="route-info"></div> <!-- This is where the shortest route will be displayed -->
-        <p id="totalTime"></p> <!-- This is where the total time will be displayed -->
+<!--        <h2>경로 정보</h2>-->
+        <div id="shortestRoute" class="route-info"></div> <!-- 경로 결과를 표시하는 영역 -->
     </div>
 </div>
 
@@ -98,65 +112,126 @@
     const departureData = JSON.parse(localStorage.getItem('departureData'));
     const destinationData = JSON.parse(localStorage.getItem('destinationData'));
 
-    // Display the departure and destination data
-    if (departureData) {
-        document.getElementById('departureInfo').innerHTML =
-            `주소: ${departureData.address}<br>${departureData.nearestStation}`;
-    }
+    // 줄바꿈을 기준으로 데이터를 분리하여 배열로 만듦
+    const depStations = departureData.nearestStation.split('\n').filter(line => line.trim() !== '');
+    const desStations = destinationData.nearestStation.split('\n').filter(line => line.trim() !== '');
 
-    if (destinationData) {
-        document.getElementById('destinationInfo').innerHTML =
-            `주소: ${destinationData.address}<br>${destinationData.nearestStation}`;
-    }
+    // 역 이름과 호선을 추출하는 함수
+    const extractStationInfo = (stationString) => {
+        const match = stationString.match(/(.+?)\s*\((.+?)\)/);
+        return match ? `${match[1]} (${match[2]})` : stationString;
+    };
 
-    // Fetch the shortest route using the nearest stations
-    if (departureData && destinationData) {
-        const routeData = {
-            startStation: departureData.nearestStation.split(' ')[3], // Extract the station name from the string
-            endStation: destinationData.nearestStation.split(' ')[3]  // Extract the station name from the string
-        };
-        fetch('/find_shortest_route/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify(routeData)
-        })
-        .then(response => response.json())
-        .then(routeResult => {
-            if (routeResult.route) {
-<!--                let routeInfo = '';-->
+    // 출발지와 목적지 정보에서 역 이름과 호선을 각각 추출
+    const depStationInfo = depStations.map(extractStationInfo);
+    const desStationInfo = desStations.map(extractStationInfo);
 
-<!--                routeResult.route.forEach((station, index) => {-->
-<!--                    const stationName = station.name;-->
-<!--                    const lineInfo = station.line;-->
+<!--    // 출발지와 목적지 정보를 표시-->
+<!--    if (departureData) {-->
+<!--        document.getElementById('departureInfo').innerHTML =-->
+<!--            `주소: ${departureData.address}<br>가까운 역: ${depStationInfo.join(', ')}`;-->
+<!--    }-->
 
-<!--                    if (station.transfer) {-->
-<!--                        routeInfo += `<span class="transfer">${stationName} (${lineInfo}호선)</span>`;-->
-<!--                    } else {-->
-<!--                        routeInfo += `<span>${stationName} (${lineInfo}호선)</span>`;-->
-<!--                    }-->
+<!--    if (destinationData) {-->
+<!--        document.getElementById('destinationInfo').innerHTML =-->
+<!--            `주소: ${destinationData.address}<br>가까운 역: ${desStationInfo.join(', ')}`;-->
+<!--    }-->
+// Extract the 3 nearest lines from departure and destination data
+if (departureData && destinationData) {
+    const departureStations = depStations.map(station => station.match(/(.+?)\s*\((\d)호선\)/)).filter(Boolean).slice(0, 3);
+    const destinationStations = desStations.map(station => station.match(/(.+?)\s*\((\d)호선\)/)).filter(Boolean).slice(0, 3);
 
-<!--                    if (index < routeResult.route.length - 1) {-->
-<!--                        routeInfo += ' → ';-->
-<!--                    }-->
-<!--                });-->
+    const routeCombinations = [];
 
-<!--                document.getElementById('shortestRoute').innerHTML = routeInfo;-->
-
-                // Display total time
-                document.getElementById('totalTime').innerHTML = `<strong>총 예상 소요 시간: </strong>${routeResult.total_time.toFixed(1)} 분`;
-            } else {
-                document.getElementById('shortestRoute').innerHTML = '<p>경로를 찾을 수 없습니다.</p>';
-                document.getElementById('totalTime').innerHTML = '';
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching the shortest route:', error);
-            document.getElementById('shortestRoute').innerHTML = '<p>오류가 발생했습니다.</p>';
-            document.getElementById('totalTime').innerHTML = '';
+    // Create all combinations of startStation and endStation
+    departureStations.forEach(depStation => {
+        destinationStations.forEach(destStation => {
+            routeCombinations.push({
+                startStation: depStation[1],  // 출발역 이름
+                startLine: depStation[2] + '호선',  // 출발 호선
+                endStation: destStation[1],  // 도착역 이름
+                endLine: destStation[2] + '호선'  // 도착 호선
+            });
         });
+    });
+
+const allRoutes = [];  // 모든 경로 데이터를 저장할 배열
+
+routeCombinations.forEach((combination, index) => {
+    const routeData = {
+        startStation: combination.startStation,
+        startLine: combination.startLine,
+        endStation: combination.endStation,
+        endLine: combination.endLine
+    };
+
+    fetch('/find_shortest_route/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(routeData)
+    })
+    .then(response => response.json())
+    .then(routeResult => {
+        if (routeResult.route) {
+            allRoutes.push({
+                combination,
+                routeResult
+            });
+
+            // Check if all routes are processed
+            if (allRoutes.length === routeCombinations.length) {
+                // Sort routes by total_time
+                allRoutes.sort((a, b) => a.routeResult.total_time - b.routeResult.total_time);
+
+                // Display sorted routes
+                allRoutes.forEach((routeData, sortedIndex) => {
+                    let routeInfo = '';
+
+                    // 출발역
+                    const startStation = routeData.routeResult.route[0];
+                    routeInfo += `<span><strong>${startStation.name} (${startStation.line}호선)</strong></span> >> `;
+
+                    // 환승역들만 표시
+                    const transferStations = routeData.routeResult.route.filter(station => station.transfer);
+                    transferStations.forEach((station, stationIndex) => {
+                        routeInfo += `<span class="transfer">${station.name} (${station.line}호선)</span>`;
+                        if (stationIndex < transferStations.length - 1) {
+                            routeInfo += ' > ';
+                        }
+                    });
+
+                    // 도착역
+                    const endStation = routeData.routeResult.route[routeData.routeResult.route.length - 1];
+                    if (transferStations.length > 0) {
+                        routeInfo += ' >> ';
+                    }
+                    routeInfo += `<span><strong>${endStation.name} (${endStation.line}호선)</strong></span>`;
+
+                    // Display each route in a separate box (card)
+                    const card = document.createElement('div');
+                    card.classList.add('route-card');
+                    card.innerHTML = `
+                        <h3>최단경로 ${sortedIndex + 1}: ${routeData.combination.startStation} >> 환승구간 >> ${routeData.combination.endStation} (예상 소요 시간: ${routeData.routeResult.total_time.toFixed(1)} 분)</h3>
+                        <p>${routeInfo}</p>
+                    `;
+                    document.getElementById('shortestRoute').appendChild(card);
+                });
+            }
+        } else {
+            document.getElementById('shortestRoute').innerHTML = '<p>경로를 찾을 수 없습니다.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching the shortest route:', error);
+        const card = document.createElement('div');
+        card.classList.add('route-card');
+        card.innerHTML = `<p>오류 발생: ${error.message}</p>`;
+        document.getElementById('shortestRoute').appendChild(card);
+    });
+});
     }
 
     // Function to get CSRF token from cookies

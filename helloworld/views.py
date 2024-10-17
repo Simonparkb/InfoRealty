@@ -145,7 +145,9 @@ def find_shortest_route(request):
             data = json.loads(request.body)
             start_station = data.get('startStation')
             end_station = data.get('endStation')
-            exclude_lines = data.get('excludeLines', [])  # 제외할 노선 정보
+            # start_station = "창신"
+            # end_station = "동대문"
+            # exclude_lines = data.get('excludeLines', [])  # 제외할 노선 정보
 
             if not start_station or not end_station:
                 return JsonResponse({'error': '출발역과 도착역이 필요합니다.'}, status=400)
@@ -153,9 +155,9 @@ def find_shortest_route(request):
             # 최적화된 그래프 생성
             subway_graph = create_optimized_graph()
 
-            # 체크되지 않은 노선에 속한 역들을 제거 (즉, exclude_lines에 포함된 노선)
-            nodes_to_remove = [n for n in subway_graph.nodes if any(f"({line}호선)" in n for line in exclude_lines)]
-            subway_graph.remove_nodes_from(nodes_to_remove)
+            # # 체크되지 않은 노선에 속한 역들을 제거 (즉, exclude_lines에 포함된 노선)
+            # nodes_to_remove = [n for n in subway_graph.nodes if any(f"({line}호선)" in n for line in exclude_lines)]
+            # subway_graph.remove_nodes_from(nodes_to_remove)
 
             # 출발역과 도착역을 정확히 매칭 (노선 정보 포함)
             start_station_with_line = next((n for n in subway_graph.nodes if start_station in n), None)
@@ -276,6 +278,37 @@ def calculate_nearest_station(lat, lng, stations):
             nearest_station = station
     return nearest_station, min_distance
 
+def find_nearest_stations_by_line(lat, lng, stations):
+    # 노선을 기준으로 그룹화
+    stations_by_line = {}
+    for station in stations:
+        line = station['line']
+        if line not in stations_by_line:
+            stations_by_line[line] = []
+        stations_by_line[line].append(station)
+
+    nearest_stations = {}
+
+    # 각 노선별로 가장 가까운 역 찾기
+    for line, stations in stations_by_line.items():
+        nearest_station = None
+        min_distance = float('inf')
+        for station in stations:
+            distance = calculate_distance(lat, lng, station['latitude'], station['longitude'])
+            if distance < min_distance:
+                min_distance = distance
+                nearest_station = station
+        # 결과를 출력 및 저장
+        if nearest_station:
+            nearest_stations[line] = {
+                'station': nearest_station['name'],
+                'distance': min_distance
+            }
+            # print(f"{line}호선: {nearest_station['name']} 역, 거리: {min_distance:.2f}m")
+
+    return nearest_stations
+
+
 import logging
 from django.http import JsonResponse
 
@@ -288,44 +321,37 @@ def find_nearest_stations(request):
             data = json.loads(request.body)
             start_lat = data.get('startLat')
             start_lng = data.get('startLng')
-            end_lat = data.get('endLat')
-            end_lng = data.get('endLng')
-            include_lines = data.get('includeLines', [])  # 선택된 노선 정보
+            include_lines = data.get('includeLines', [])
 
-            if start_lat is None or start_lng is None or end_lat is None or end_lng is None:
+            if start_lat is None or start_lng is None:
                 return JsonResponse({'error': '좌표 정보가 필요합니다.'}, status=400)
 
-            # 역 데이터 불러오기
+            # 역 데이터 불러오기 (예: CSV 파일에서 불러오기)
             stations = load_stations_from_csv()
 
             # 선택된 노선 필터링
             filtered_stations = [station for station in stations if station['line'] in include_lines]
+            # print(start_lat, start_lng, "좌표와 필터링된 역 목록:")
+            # print(filtered_stations)
 
             if not filtered_stations:
                 return JsonResponse({'error': '선택된 노선에 해당하는 사용 가능한 역이 없습니다.'}, status=404)
 
-            # 출발지 근처에서 가장 가까운 역 찾기
-            nearest_start, start_distance = calculate_nearest_station(start_lat, start_lng, filtered_stations)
-            nearest_end, end_distance = calculate_nearest_station(end_lat, end_lng, filtered_stations)
+            # 노선별로 가장 가까운 역 찾기
+            nearest_stations = find_nearest_stations_by_line(start_lat, start_lng, filtered_stations)
 
+            # 상위 3개 역만 반환
+            top_3_stations = dict(sorted(nearest_stations.items(), key=lambda item: item[1]['distance'])[:3])
             # 걷는 시간 계산 (100미터 당 70초)
             walk_time_per_meter = 70 / 100
-            start_walk_time = (start_distance * walk_time_per_meter) / 60
-            end_walk_time = (end_distance * walk_time_per_meter) / 60
+            for line, station_info in top_3_stations.items():
+                distance = station_info['distance']
+                walk_time_minutes = (distance * walk_time_per_meter) / 60  # 분 단위로 변환
+                station_info['walk_time'] = round(walk_time_minutes, 1)  # 소수점 1자리로 반올림
 
+            print(top_3_stations)
             return JsonResponse({
-                'start_station': {
-                    'name': nearest_start['name'],
-                    'line': nearest_start['line'],
-                    'distance': start_distance,
-                    'walk_time': round(start_walk_time, 1)
-                },
-                'end_station': {
-                    'name': nearest_end['name'],
-                    'line': nearest_end['line'],
-                    'distance': end_distance,
-                    'walk_time': round(end_walk_time, 1)
-                }
+                'nearest_stations': top_3_stations
             })
         except Exception as e:
             logger.error(f"Error in find_nearest_stations: {e}")

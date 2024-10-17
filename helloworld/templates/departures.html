@@ -13,7 +13,9 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            padding: 0 20px; /* 기본 좌우 여백 */
         }
+
         .search-container {
             width: 100%;
             max-width: 600px;
@@ -25,6 +27,17 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 10px;
+        }
+
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 0 15px; /* 모바일에서 좌우 여백 추가 */
+            }
+
+            .search-container {
+                padding: 20px;
+            }
         }
         .input-group {
             display: flex;
@@ -181,18 +194,20 @@
             body: JSON.stringify({
                 startLat: lat,
                 startLng: lng,
-                endLat: lat,  // 출발지만 사용
-                endLng: lng,
                 includeLines: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
             })
         })
         .then(response => response.json())
         .then(data => {
-            if (data.start_station) {
-                nearestStationDiv.innerHTML = `
-                    <p>가장 가까운 역: ${data.start_station.name} (${data.start_station.line}호선)</p>
-                    <p>거리: ${data.start_station.distance.toFixed(2)}m, 예상 걷는 시간: ${data.start_station.walk_time}분</p>
-                `;
+            // nearest_stations 데이터를 순회하며 각 호선별로 가장 가까운 역 출력
+            if (data.nearest_stations) {
+                let stationsInfo = '';
+                for (const [line, stationInfo] of Object.entries(data.nearest_stations)) {
+                    stationsInfo += `
+                      <p>${stationInfo.station} (${line}호선), 거리: ${stationInfo.distance.toFixed(2)}m, 걷는 시간: 약 ${stationInfo.walk_time.toFixed(1)}분</p>
+                    `;
+                }
+                nearestStationDiv.innerHTML = stationsInfo;
                 nearestStationDiv.style.display = 'block';
             } else {
                 nearestStationDiv.innerHTML = '<p>가까운 역을 찾을 수 없습니다.</p>';
@@ -200,6 +215,7 @@
             }
         })
         .catch(error => {
+            console.error('Error fetching nearest stations:', error);
             nearestStationDiv.innerHTML = '<p>오류가 발생했습니다.</p>';
             nearestStationDiv.style.display = 'block';
         });
@@ -229,11 +245,10 @@
 
         localStorage.setItem('departureData', JSON.stringify(departureData));
         window.location.href = 'arrivals';
+
+
     });
 
-<!--    nextPageBtn.addEventListener('click', function() {-->
-<!--        window.location.href = 'arrivals';-->
-<!--    });-->
 </script>
 
 </body>

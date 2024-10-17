@@ -13,7 +13,9 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            padding: 0 20px; /* 기본 좌우 여백 */
         }
+
         .search-container {
             width: 100%;
             max-width: 600px;
@@ -25,6 +27,17 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 10px;
+        }
+
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 0 15px; /* 모바일에서 좌우 여백 추가 */
+            }
+
+            .search-container {
+                padding: 20px;
+            }
         }
         .input-group {
             display: flex;
@@ -204,7 +217,43 @@
             nearestStationDiv.style.display = 'block';
         });
     }
-
+    function findNearestStation(lat, lng) {
+        fetch('/find_nearest_stations/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                startLat: lat,
+                startLng: lng,
+                includeLines: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // nearest_stations 데이터를 순회하며 각 호선별로 가장 가까운 역 출력
+            if (data.nearest_stations) {
+                let stationsInfo = '';
+                for (const [line, stationInfo] of Object.entries(data.nearest_stations)) {
+                    // 원하는 형식으로 역 정보 구성
+                    stationsInfo += `
+                      <p>${stationInfo.station} (${line}호선), 거리: ${stationInfo.distance.toFixed(2)}m, 걷는 시간: 약 ${stationInfo.walk_time.toFixed(1)}분</p>
+                    `;
+                }
+                nearestStationDiv.innerHTML = stationsInfo;
+                nearestStationDiv.style.display = 'block';
+            } else {
+                nearestStationDiv.innerHTML = '<p>가까운 역을 찾을 수 없습니다.</p>';
+                nearestStationDiv.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching nearest stations:', error);
+            nearestStationDiv.innerHTML = '<p>오류가 발생했습니다.</p>';
+            nearestStationDiv.style.display = 'block';
+        });
+    }
     function getCSRFToken() {
         let csrfToken = null;
         const cookies = document.cookie.split(';');
@@ -231,9 +280,6 @@
         window.location.href = '/services';
     });
 
-<!--    nextPageBtn.addEventListener('click', function() {-->
-<!--        window.location.href = '/services';-->
-<!--    });-->
 </script>
 
 </body>
