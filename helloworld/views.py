@@ -321,7 +321,7 @@ def find_nearest_stations(request):
             data = json.loads(request.body)
             start_lat = data.get('startLat')
             start_lng = data.get('startLng')
-            # include_lines = data.get('includeLines', [])
+            include_lines = data.get('includeLines', [])
 
             if start_lat is None or start_lng is None:
                 return JsonResponse({'error': '좌표 정보가 필요합니다.'}, status=400)
@@ -330,7 +330,7 @@ def find_nearest_stations(request):
             stations = load_stations_from_csv()
 
             # 선택된 노선 필터링
-            # filtered_stations = [station for station in stations if station['line'] in include_lines]
+            filtered_stations = [station for station in stations if station['line'] in include_lines]
             # print(start_lat, start_lng, "좌표와 필터링된 역 목록:")
             # print(filtered_stations)
 
