@@ -77,11 +77,6 @@
             box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
             -webkit-overflow-scrolling: touch;
             transition: opacity 0.3s ease;
-            width: 100vw; /* 전체 화면 너비 */
-            height: 100vh; /* 전체 화면 높이 */
-            top: 0;
-            left: 0;
-            overflow: hidden; /* 스크롤 숨김 */
         }
         #layer.open {
             display: block;
@@ -90,11 +85,9 @@
         #layer img {
             cursor: pointer;
             position: absolute;
-            right: 10px;
-            top: 10px;
+            right: -3px;
+            top: -3px;
             z-index: 1;
-            width: 30px;
-            height: 30px;
         }
         #result, #nearestStation {
             margin-top: 10px;
