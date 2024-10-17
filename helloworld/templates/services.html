@@ -214,7 +214,7 @@ routeCombinations.forEach((combination, index) => {
                     const card = document.createElement('div');
                     card.classList.add('route-card');
                     card.innerHTML = `
-                        <h3>최단경로 ${sortedIndex + 1}: ${routeData.combination.startStation} >> 환승구간 >> ${routeData.combination.endStation} (예상 소요 시간: ${routeData.routeResult.total_time.toFixed(1)} 분)</h3>
+                        <h3>최단경로 ${sortedIndex + 1}: ${routeData.combination.startStation} >> 환승구간 >> ${routeData.combination.endStation}<br>(예상 소요 시간: ${routeData.routeResult.total_time.toFixed(1)} 분)</h3>
                         <p>${routeInfo}</p>
                     `;
                     document.getElementById('shortestRoute').appendChild(card);
