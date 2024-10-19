@@ -472,7 +472,6 @@ document.getElementById('findNearestStations').addEventListener('click', functio
                 startStation: result.start_station.name,
                 endStation: result.end_station.name
             };
-
             fetch('/find_shortest_route/', {
                 method: 'POST',
                 headers: {

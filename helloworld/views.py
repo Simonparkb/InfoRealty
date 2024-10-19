@@ -90,7 +90,7 @@ def create_optimized_graph():
         # CSV 파일 읽기
         try:
             df = pd.read_csv(csv_file_path)
-            print("CSV 파일 읽기 성공")
+            # print("CSV 파일 읽기 성공")
         except Exception as e:
             print(f"CSV 파일을 읽는 중 오류가 발생했습니다: {e}")
             return None
@@ -108,11 +108,11 @@ def create_optimized_graph():
                 for i in range(len(line_data) - 1):
                     # 역과 노선을 함께 연결
                     G.add_edge(
-                        f"{line_data.loc[i, 'name']} ({line}호선)",
-                        f"{line_data.loc[i + 1, 'name']} ({line}호선)",
+                        f"({line}){line_data.loc[i, 'name']}",
+                        f"({line}){line_data.loc[i + 1, 'name']}",
                         weight=travel_time  # 호선별 이동 시간 적용
                     )
-                print(f"{line}호선 연결 완료")
+                # print(f"{line}호선 연결 완료")
 
             # 2. 같은 이름을 가진 다른 노선 간의 연결 (환승, 가중치: 환승 시간)
             for station_name, matching_stations in df.groupby('name'):
@@ -122,14 +122,14 @@ def create_optimized_graph():
                             if i < j:
                                 # 같은 이름의 다른 노선 간 연결 (환승)
                                 G.add_edge(
-                                    f"{row['name']} ({row['line']}호선)",
-                                    f"{row2['name']} ({row2['line']}호선)",
+                                    f"({row['line']}){row['name']}",
+                                    f"({row2['line']}){row2['name']}",
                                     weight=transfer_time  # 환승 시간 적용
                                 )
-            print("환승 연결 완료")
+            # print("환승 연결 완료")
 
             graph_cache = G
-            print("그래프 생성 완료")
+            # print("그래프 생성 완료")
 
         except Exception as e:
             print(f"그래프 생성 중 오류가 발생했습니다: {e}")
@@ -145,9 +145,8 @@ def find_shortest_route(request):
             data = json.loads(request.body)
             start_station = data.get('startStation')
             end_station = data.get('endStation')
-            # start_station = "창신"
-            # end_station = "동대문"
-            # exclude_lines = data.get('excludeLines', [])  # 제외할 노선 정보
+            exclude_lines = data.get('exclude_lines', [])  # 제외할 노선을 받음. 없으면 빈 리스트
+            print(start_station, end_station, exclude_lines)
 
             if not start_station or not end_station:
                 return JsonResponse({'error': '출발역과 도착역이 필요합니다.'}, status=400)
@@ -155,14 +154,16 @@ def find_shortest_route(request):
             # 최적화된 그래프 생성
             subway_graph = create_optimized_graph()
 
-            # # 체크되지 않은 노선에 속한 역들을 제거 (즉, exclude_lines에 포함된 노선)
-            # nodes_to_remove = [n for n in subway_graph.nodes if any(f"({line}호선)" in n for line in exclude_lines)]
-            # subway_graph.remove_nodes_from(nodes_to_remove)
+            # # 제외할 노선이 있는 경우 해당 노선의 역들을 그래프에서 제거
+            # if exclude_lines:
+            #     nodes_to_remove = [n for n in subway_graph.nodes if any(f"({line})" in n for line in exclude_lines)]
+            #     subway_graph.remove_nodes_from(nodes_to_remove)
 
             # 출발역과 도착역을 정확히 매칭 (노선 정보 포함)
             start_station_with_line = next((n for n in subway_graph.nodes if start_station in n), None)
             end_station_with_line = next((n for n in subway_graph.nodes if end_station in n), None)
-            print(start_station_with_line,end_station_with_line)
+            # print(start_station_with_line, end_station_with_line)
+
             if not start_station_with_line:
                 return JsonResponse({'error': f'출발 역 "{start_station}"을(를) 찾을 수 없습니다.'}, status=404)
 
@@ -186,9 +187,8 @@ def find_shortest_route(request):
 
                     # 현재 역과 다음 역 정보 가져오기
                     current_station_info = next(
-                        (s for s in stations if current_station == f"{s['name']} ({s['line']}호선)"), None)
-                    next_station_info = next((s for s in stations if next_station == f"{s['name']} ({s['line']}호선)"),
-                                             None)
+                        (s for s in stations if current_station == f"({s['line']}){s['name']}"), None)
+                    next_station_info = next((s for s in stations if next_station == f"({s['line']}){s['name']}"), None)
 
                     if current_station_info and next_station_info:
                         route.append({
@@ -217,7 +217,7 @@ def find_shortest_route(request):
                     'line': next_station_info['line'],
                     'transfer': next_station_info['transfer']
                 })
-
+                print(route)
                 return JsonResponse({
                     'route': route,
                     'total_time': total_time,  # 종합 시간을 포함
@@ -321,16 +321,18 @@ def find_nearest_stations(request):
             data = json.loads(request.body)
             start_lat = data.get('startLat')
             start_lng = data.get('startLng')
-            include_lines = data.get('includeLines', [])
-
+            # include_lines = data.get('includeLines', [])
+            # print(include_lines)
             if start_lat is None or start_lng is None:
                 return JsonResponse({'error': '좌표 정보가 필요합니다.'}, status=400)
 
             # 역 데이터 불러오기 (예: CSV 파일에서 불러오기)
             stations = load_stations_from_csv()
 
+
             # 선택된 노선 필터링
-            filtered_stations = [station for station in stations if station['line'] in include_lines]
+            filtered_stations = [station for station in stations]
+            # filtered_stations = [station for station in stations if station['line'] in include_lines]
             # print(start_lat, start_lng, "좌표와 필터링된 역 목록:")
             # print(filtered_stations)
 
@@ -349,7 +351,7 @@ def find_nearest_stations(request):
                 walk_time_minutes = (distance * walk_time_per_meter) / 60  # 분 단위로 변환
                 station_info['walk_time'] = round(walk_time_minutes, 1)  # 소수점 1자리로 반올림
 
-            print(top_3_stations)
+            # print(top_3_stations)
             return JsonResponse({
                 'nearest_stations': top_3_stations
             })

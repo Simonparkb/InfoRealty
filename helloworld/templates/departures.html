@@ -29,6 +29,13 @@
             gap: 10px;
         }
 
+        /* 검색창과 결과 목록의 동일한 폭을 맞추기 위해 추가 */
+        #nearestStation {
+            width: 100%; /* 검색창과 같은 너비 */
+            max-width: 600px; /* 최대 너비 설정 */
+            background-color: white;
+        }
+
         /* Mobile specific styles */
         @media (max-width: 768px) {
             body {
@@ -100,6 +107,44 @@
             width: 100%;
             overflow: hidden;
         }
+        /* 역 목록의 hover 시 스타일 */
+        .station-item {
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .station-item:hover {
+            background-color: #f0f0f0;
+        }
+        /* AS IS 라벨 스타일 */
+        .asis-label {
+            display: inline-block;
+            background-color: green; /* 녹색 배경 */
+            color: white; /* 글자 색상 */
+            font-size: 0.8rem; /* 글자 크기 */
+            font-weight: bold;
+            padding: 2px 8px; /* 내부 여백 */
+            border-radius: 12px; /* 타원형을 위한 둥근 테두리 */
+            line-height: 1; /* 텍스트 세로 정렬을 위한 줄 간격 */
+            float: right; /* 우측 정렬 */
+            margin-left: 10px; /* 글자와의 간격 */
+        }
+
+        /* TO BE 라벨 스타일 */
+        .tobe-label {
+            display: inline-block;
+            background-color: orange; /* TO BE 라벨 - 주황색 */
+            color: white;
+            font-size: 0.8rem; /* 글자 크기 */
+            font-weight: bold;
+            padding: 2px 8px; /* 내부 여백 */
+            border-radius: 12px; /* 타원형을 위한 둥근 테두리 */
+            line-height: 1; /* 텍스트 세로 정렬을 위한 줄 간격 */
+            float: right; /* 우측 정렬 */
+            margin-left: 10px; /* 글자와의 간격 */
+        }
     </style>
 </head>
 <body>
@@ -107,7 +152,7 @@
 <div class="search-container">
     <div class="input-group">
         <input type="text" id="startLocation" placeholder="출발지 주소 입력" readonly>
-        <button id="nextPageBtn" disabled>도착지 입력</button>
+<!--        <button id="nextPageBtn" disabled>도착지 입력</button>-->
     </div>
 
     <!-- 위도, 경도 표시 영역 -->
@@ -187,51 +232,68 @@
         element_layer.classList.add('open');
     }
 function findNearestStation(lat, lng) {
-    fetch('/find_nearest_stations/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({
-            startLat: lat,
-            startLng: lng,
-            includeLines: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+        const asIsLines = ['1', '2', '3', '4', '5', '6', '7']; // AS IS 노선
+        const toBeLines = ['8', '9', 'Sinbundang']; // TO BE 노선
+
+        fetch('/find_nearest_stations/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                startLat: lat,
+                startLng: lng,
+                asIsLines: asIsLines,
+                toBeLines: toBeLines
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // nearest_stations 데이터를 순회하며 반경 1km 내의 가장 가까운 최대 3개의 역 출력
-        if (data.nearest_stations) {
-            let stationsInfo = '';
-            const stations = Object.entries(data.nearest_stations)
-                .filter(([line, stationInfo]) => stationInfo.distance <= 1000) // 1km 이하 거리 필터링
-                .sort((a, b) => a[1].distance - b[1].distance) // 거리 기준으로 정렬
-                .slice(0, 3); // 최대 3개의 역만 선택
+        .then(response => response.json())
+        .then(data => {
+            if (data.nearest_stations) {
+                let stationsInfo = '';
+                const stations = Object.entries(data.nearest_stations)
+                    .filter(([line, stationInfo]) => stationInfo.distance <= 1000) // 1km 이하 거리 필터링
+                    .sort((a, b) => a[1].distance - b[1].distance) // 거리 기준으로 정렬
+                    .slice(0, 3); // 최대 3개의 역만 선택
 
-            if (stations.length > 0) {
-                stations.forEach(([line, stationInfo]) => {
-                    stationsInfo += `
-                      <p>${stationInfo.station} (${line}호선), 거리: ${stationInfo.distance.toFixed(2)}m, 걷는 시간: 약 ${stationInfo.walk_time.toFixed(1)}분</p>
-                    `;
-                });
+                if (stations.length > 0) {
+                    stations.forEach(([line, stationInfo]) => {
+                        let label = '';
+                        let status = '';
+
+                        if (asIsLines.includes(line)) {
+                            label = '<span class="asis-label">AS IS</span>';
+                            status = 'AS IS';
+                        } else if (toBeLines.includes(line)) {
+                            label = '<span class="tobe-label">TO BE</span>';
+                            status = 'TO BE';
+                        }
+
+                        // 역 정보 HTML에 data-status 추가
+                        stationsInfo += `
+                            <p class="station-item" data-station="${stationInfo.station}" data-line="${line}" data-distance="${stationInfo.distance.toFixed(2)}" data-walk-time="${stationInfo.walk_time.toFixed(1)}" data-status="${status}">
+                                ${stationInfo.station} (${line}호선) ${label}, 거리: ${stationInfo.distance.toFixed(2)}m, 걷는 시간: 약 ${stationInfo.walk_time.toFixed(1)}분
+                            </p>
+                        `;
+                    });
+                } else {
+                    stationsInfo = '<p>반경 1km 내에 가까운 역을 찾을 수 없습니다.</p>';
+                }
+
+                nearestStationDiv.innerHTML = stationsInfo;
+                nearestStationDiv.style.display = 'block';
             } else {
-                stationsInfo = '<p>반경 1km 내에 가까운 역을 찾을 수 없습니다.</p>';
+                nearestStationDiv.innerHTML = '<p>가까운 역을 찾을 수 없습니다.</p>';
+                nearestStationDiv.style.display = 'block';
             }
-
-            nearestStationDiv.innerHTML = stationsInfo;
+        })
+        .catch(error => {
+            console.error('Error fetching nearest stations:', error);
+            nearestStationDiv.innerHTML = '<p>오류가 발생했습니다.</p>';
             nearestStationDiv.style.display = 'block';
-        } else {
-            nearestStationDiv.innerHTML = '<p>가까운 역을 찾을 수 없습니다.</p>';
-            nearestStationDiv.style.display = 'block';
-        }
-    })
-    .catch(error => {
-        console.error('Error fetching nearest stations:', error);
-        nearestStationDiv.innerHTML = '<p>오류가 발생했습니다.</p>';
-        nearestStationDiv.style.display = 'block';
-    });
-}
+        });
+    }
 
     function getCSRFToken() {
         let csrfToken = null;
@@ -248,18 +310,37 @@ function findNearestStation(lat, lng) {
     startLocationInput.addEventListener('click', function() {
         execDaumPostcode();
     });
+    nearestStationDiv.addEventListener('click', function(event) {
+        if (event.target.classList.contains('station-item')) {
+            const selectedStation = {
+                station: event.target.dataset.station,
+                line: event.target.dataset.line,
+                distance: event.target.dataset.distance,
+                walkTime: event.target.dataset.walkTime,
+                status: event.target.dataset.status  // AS IS 또는 TO BE 상태 추가
+            };
 
-    nextPageBtn.addEventListener('click', function() {
-        const departureData = {
-            address: startLocationInput.value,
-            nearestStation: nearestStationDiv.innerText
-        };
+            const departureData = {
+                address: startLocationInput.value,
+                nearestStation: selectedStation
+            };
 
-        localStorage.setItem('departureData', JSON.stringify(departureData));
-        window.location.href = 'arrivals';
+            localStorage.setItem('departureData', JSON.stringify(departureData));
+            window.location.href = '/arrivals';  // AS IS일 때
 
-
+        }
     });
+<!--    nextPageBtn.addEventListener('click', function() {-->
+<!--        const departureData = {-->
+<!--            address: startLocationInput.value,-->
+<!--            nearestStation: nearestStationDiv.innerText-->
+<!--        };-->
+
+<!--        localStorage.setItem('departureData', JSON.stringify(departureData));-->
+<!--        window.location.href = 'arrivals';-->
+
+
+<!--    });-->
 
 </script>
 
