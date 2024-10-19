@@ -57,6 +57,8 @@
             padding: 15px;
             margin-bottom: 20px;
             border-left: 5px solid #4CAF50; /* 강조선 추가 */
+            position: relative; /* 버튼을 절대 위치로 배치하기 위한 설정 */
+            padding-right: 120px; /* 버튼 공간을 확보하기 위한 우측 여백 */
         }
         .route-card h3 {
             margin: 0;
@@ -67,8 +69,49 @@
         .route-card p {
             margin: 5px 0;
         }
+        .asis-label, .tobe-label {
+            display: inline-block;
+            background-color: green; /* AS IS 라벨 - 녹색 */
+            color: white;
+            font-size: 0.8rem; /* 글자 크기 */
+            font-weight: bold;
+            padding: 2px 8px; /* 내부 여백 */
+            border-radius: 12px; /* 타원형을 위한 둥근 테두리 */
+            margin-left: 10px; /* 글자와의 간격 */
+            line-height: 1;
+        }
 
-        /* 모바일 화면을 위한 미디어 쿼리 */
+        .tobe-label {
+            background-color: orange; /* TO BE 라벨 - 주황색 */
+        }
+
+        /* 라벨을 버튼 위에 배치 */
+        .label-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .detail-button {
+            background-color: #E0E0E0; /* 연한 회색 배경 */
+            color: #333; /* 어두운 글자색 */
+            border: none;
+            padding: 6px 12px; /* 작고 간결한 패딩 */
+            border-radius: 16px; /* 둥근 모서리로 모던한 느낌 */
+            font-size: 0.8rem; /* 작은 글자 크기 */
+            cursor: pointer;
+            position: absolute;
+            right: 20px; /* 우측 끝에서 20px */
+            top: 50%; /* 세로 중앙 정렬 */
+            transform: translateY(-50%); /* 세로 중앙 정렬 */
+            transition: background-color 0.3s ease; /* 호버 시 부드러운 색상 변경 */
+        }
+
+        .detail-button:hover {
+            background-color: #BDBDBD; /* 호버 시 더 어두운 회색으로 변경 */
+        }
+
         @media (max-width: 768px) {
             body {
                 height: auto;
@@ -91,152 +134,136 @@
 <body>
 
 <div class="info-container">
-<!--    <div class="info-box">-->
-<!--        <h2>출발지 정보</h2>-->
-<!--        <p id="departureInfo"></p>-->
-<!--    </div>-->
-
-<!--    <div class="info-box">-->
-<!--        <h2>도착지 정보</h2>-->
-<!--        <p id="destinationInfo"></p>-->
-<!--    </div>-->
-
     <div class="info-box">
-<!--        <h2>경로 정보</h2>-->
         <div id="shortestRoute" class="route-info"></div> <!-- 경로 결과를 표시하는 영역 -->
     </div>
 </div>
 
 <script>
+// 저장된 출발지 및 도착지 데이터 가져오기
+const departureData = JSON.parse(localStorage.getItem('departureData'));
+const destinationData = JSON.parse(localStorage.getItem('destinationData'));
 
+const asIsLines = ['1', '2', '3', '4', '5', '6', '7'];  // AS IS 노선
+const toBeLines = ['8', '9', 'Sinbundang'];  // TO BE 노선
 
-    // Retrieve stored data
-    const departureData = JSON.parse(localStorage.getItem('departureData'));
-    const destinationData = JSON.parse(localStorage.getItem('destinationData'));
-
-    // 줄바꿈을 기준으로 데이터를 분리하여 배열로 만듦
-    const depStations = departureData.nearestStation.split('\n').filter(line => line.trim() !== '');
-    const desStations = destinationData.nearestStation.split('\n').filter(line => line.trim() !== '');
-
-    // 역 이름과 호선을 추출하는 함수
-    const extractStationInfo = (stationString) => {
-        const match = stationString.match(/(.+?)\s*\((.+?)\)/);
-        return match ? `${match[1]} (${match[2]})` : stationString;
-    };
-
-    // 출발지와 목적지 정보에서 역 이름과 호선을 각각 추출
-    const depStationInfo = depStations.map(extractStationInfo);
-    const desStationInfo = desStations.map(extractStationInfo);
-
-<!--    // 출발지와 목적지 정보를 표시-->
-<!--    if (departureData) {-->
-<!--        document.getElementById('departureInfo').innerHTML =-->
-<!--            `주소: ${departureData.address}<br>가까운 역: ${depStationInfo.join(', ')}`;-->
-<!--    }-->
-
-<!--    if (destinationData) {-->
-<!--        document.getElementById('destinationInfo').innerHTML =-->
-<!--            `주소: ${destinationData.address}<br>가까운 역: ${desStationInfo.join(', ')}`;-->
-<!--    }-->
-// Extract the 3 nearest lines from departure and destination data
 if (departureData && destinationData) {
-    const departureStations = depStations.map(station => station.match(/(.+?)\s*\((\d)호선\)/)).filter(Boolean).slice(0, 3);
-    const destinationStations = desStations.map(station => station.match(/(.+?)\s*\((\d)호선\)/)).filter(Boolean).slice(0, 3);
+    const departureStation = departureData.nearestStation.station;
+    const departureLine = departureData.nearestStation.line;
+    const destinationStation = destinationData.nearestStation.station;
+    const destinationLine = destinationData.nearestStation.line;
 
-    const routeCombinations = [];
-
-    // Create all combinations of startStation and endStation
-    departureStations.forEach(depStation => {
-        destinationStations.forEach(destStation => {
-            routeCombinations.push({
-                startStation: depStation[1],  // 출발역 이름
-                startLine: depStation[2] + '호선',  // 출발 호선
-                endStation: destStation[1],  // 도착역 이름
-                endLine: destStation[2] + '호선'  // 도착 호선
-            });
-        });
-    });
-
-const allRoutes = [];  // 모든 경로 데이터를 저장할 배열
-
-routeCombinations.forEach((combination, index) => {
+    // 출발역과 도착역 정보
     const routeData = {
-        startStation: combination.startStation,
-        startLine: combination.startLine,
-        endStation: combination.endStation,
-        endLine: combination.endLine
+        startStation: "(" + departureLine + ")" + departureStation,
+        endStation: "(" + destinationLine + ")" + destinationStation,
     };
 
-    fetch('/find_shortest_route/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify(routeData)
-    })
-    .then(response => response.json())
-    .then(routeResult => {
+    // 출발지 또는 도착지가 TO BE 노선에 포함되어 있는지 확인
+    const isDepartureInToBeLines = toBeLines.includes(departureLine);
+    const isDestinationInToBeLines = toBeLines.includes(destinationLine);
+    const isDepartureInAsIsLines = asIsLines.includes(departureLine);
+    const isDestinationInAsIsLines = asIsLines.includes(destinationLine);
+
+    // 출발지나 도착지에 TO BE 노선이 있으면 AS IS/TO BE 라벨 표시
+    if (isDepartureInToBeLines || isDestinationInToBeLines) {
+        // TO BE 노선만 포함한 경로 요청, 하지만 라벨은 AS IS/TO BE
+        fetchRouteSequentially(routeData, '최단 경로', asIsLines, 'AS IS/TO BE');
+    } else if (isDepartureInAsIsLines && isDestinationInAsIsLines) {
+        // AS IS 노선만 사용한 경로 요청 후,
+        fetchRouteSequentially(routeData, '최단 경로', toBeLines, 'AS IS')
+        // AS IS와 TO BE 노선을 포함한 경로 요청
+        .then(() => fetchRouteSequentially(routeData, '최단 경로', [], 'AS IS/TO BE'));
+    }
+} else {
+    alert("출발지 또는 도착지 정보가 없습니다.");
+}
+
+// 경로 요청 함수 (순차적으로 실행)
+async function fetchRouteSequentially(routeData, routeType, excludeLines, statusLabel) {
+    try {
+        const response = await fetch('/find_shortest_route/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                ...routeData,
+                exclude_lines: excludeLines  // 제외할 노선 추가
+            })
+        });
+
+        const routeResult = await response.json();
+
         if (routeResult.route) {
-            allRoutes.push({
-                combination,
-                routeResult
+            let routeInfo = '';
+
+            // 경로 내 모든 역 표시
+            routeResult.route.forEach((station, stationIndex) => {
+                // 첫 번째 역
+                if (stationIndex === 0) {
+                    routeInfo += `<span><strong>${station.name} (${station.line}호선)</strong></span> >> `;
+                } else if (stationIndex === routeResult.route.length - 1) {
+                    // 마지막 역
+                    routeInfo += `<span><strong>${station.name} (${station.line}호선)</strong></span>`;
+                } else {
+                    // 환승 여부에 따라 스타일 다르게 적용
+                    if (station.transfer) {
+                        routeInfo += `<span class="transfer">${station.name} (${station.line}호선)</span> >> `;
+                    } else {
+                        routeInfo += `<span>${station.name} (${station.line}호선)</span> >> `;
+                    }
+                }
             });
 
-            // Check if all routes are processed
-            if (allRoutes.length === routeCombinations.length) {
-                // Sort routes by total_time
-                allRoutes.sort((a, b) => a.routeResult.total_time - b.routeResult.total_time);
-
-                // Display sorted routes
-                allRoutes.forEach((routeData, sortedIndex) => {
-                    let routeInfo = '';
-
-                    // 출발역
-                    const startStation = routeData.routeResult.route[0];
-                    routeInfo += `<span><strong>${startStation.name} (${startStation.line}호선)</strong></span> >> `;
-
-                    // 환승역들만 표시
-                    const transferStations = routeData.routeResult.route.filter(station => station.transfer);
-                    transferStations.forEach((station, stationIndex) => {
-                        routeInfo += `<span class="transfer">${station.name} (${station.line}호선)</span>`;
-                        if (stationIndex < transferStations.length - 1) {
-                            routeInfo += ' > ';
-                        }
-                    });
-
-                    // 도착역
-                    const endStation = routeData.routeResult.route[routeData.routeResult.route.length - 1];
-                    if (transferStations.length > 0) {
-                        routeInfo += ' >> ';
-                    }
-                    routeInfo += `<span><strong>${endStation.name} (${endStation.line}호선)</strong></span>`;
-
-                    // Display each route in a separate box (card)
-                    const card = document.createElement('div');
-                    card.classList.add('route-card');
-                    card.innerHTML = `
-                        <h3>최단경로 ${sortedIndex + 1}: ${routeData.combination.startStation} >> 환승구간 >> ${routeData.combination.endStation}<br>(예상 소요 시간: ${routeData.routeResult.total_time.toFixed(1)} 분)</h3>
-                        <p>${routeInfo}</p>
-                    `;
-                    document.getElementById('shortestRoute').appendChild(card);
-                });
+            // 상태 라벨 추가
+            let labelHtml = '';
+            if (statusLabel === 'AS IS/TO BE') {
+                labelHtml = `
+                    <div class="label-container">
+                        <span class="asis-label">AS IS</span>
+                        <span class="tobe-label">TO BE</span>
+                    </div>
+                `;
+            } else if (statusLabel === 'AS IS') {
+                labelHtml = `
+                    <div class="label-container">
+                        <span class="asis-label">AS IS</span>
+                    </div>
+                `;
             }
+
+            // 경로 정보를 화면에 표시
+            const card = document.createElement('div');
+            card.classList.add('route-card');
+            card.innerHTML = `
+                <h3>${routeType}: ${routeData.startStation} >> ${routeData.endStation} (예상 소요 시간: ${routeResult.total_time.toFixed(1)} 분)</h3>
+                <p>${routeInfo}</p>
+                ${labelHtml}
+                <button class="detail-button">자세히 보기</button>
+            `;
+
+            // 버튼 클릭 시 infoRelaty 페이지로 이동
+            card.querySelector('.detail-button').addEventListener('click', function() {
+                alert('준비중입니다.');
+<!--                window.location.href = '/infoRealty';  // AS IS일 때-->
+            });
+
+            document.getElementById('shortestRoute').appendChild(card);
         } else {
             document.getElementById('shortestRoute').innerHTML = '<p>경로를 찾을 수 없습니다.</p>';
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error fetching the shortest route:', error);
         const card = document.createElement('div');
         card.classList.add('route-card');
         card.innerHTML = `<p>오류 발생: ${error.message}</p>`;
         document.getElementById('shortestRoute').appendChild(card);
-    });
-});
     }
+}
 
-    // Function to get CSRF token from cookies
+    // CSRF 토큰 가져오기 함수
     function getCSRFToken() {
         let csrfToken = null;
         const cookies = document.cookie.split(';');
@@ -248,8 +275,6 @@ routeCombinations.forEach((combination, index) => {
         });
         return csrfToken;
     }
-
 </script>
-
 </body>
 </html>
