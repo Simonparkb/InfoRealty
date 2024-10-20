@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>결과보기</title>
+    <title>리포트 보기</title>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -25,6 +25,25 @@
             flex-direction: column;
             gap: 20px;
         }
+
+        .summary-box {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: bold;
+            border: 1px solid #d0e7ff;
+            margin-bottom: 20px;
+        }
+
+        .summary-box span {
+            color: #007BFF; /* 강조색상 */
+            font-weight: bold;
+        }
+
+        /* 메인 컨텐츠 스타일 */
         .info-box {
             flex: 1;
             text-align: center;
@@ -85,7 +104,6 @@
             background-color: orange; /* TO BE 라벨 - 주황색 */
         }
 
-        /* 라벨을 버튼 위에 배치 */
         .label-container {
             display: inline-block;
             flex-direction: column;
@@ -128,12 +146,15 @@
                 font-size: 0.8rem;
             }
         }
-
     </style>
 </head>
 <body>
 
 <div class="info-container">
+    <div id="summaryBox" class="summary-box">
+        경로 요약 정보가 없습니다.
+    </div>
+
     <div class="info-box">
         <div id="shortestRoute" class="route-info"></div> <!-- 경로 결과를 표시하는 영역 -->
     </div>
@@ -147,39 +168,52 @@ const destinationData = JSON.parse(localStorage.getItem('destinationData'));
 const asIsLines = ['1', '2', '3', '4', '5', '6', '7'];  // AS IS 노선
 const toBeLines = ['8', '9', 'Sinbundang'];  // TO BE 노선
 
+let asIsTime = null;
+let toBeTime = null;
+
 if (departureData && destinationData) {
     const departureStation = departureData.nearestStation.station;
     const departureLine = departureData.nearestStation.line;
     const destinationStation = destinationData.nearestStation.station;
     const destinationLine = destinationData.nearestStation.line;
 
-    // 출발역과 도착역 정보
     const routeData = {
         startStation: "(" + departureLine + ")" + departureStation,
         endStation: "(" + destinationLine + ")" + destinationStation,
     };
 
-    // 출발지 또는 도착지가 TO BE 노선에 포함되어 있는지 확인
     const isDepartureInToBeLines = toBeLines.includes(departureLine);
     const isDestinationInToBeLines = toBeLines.includes(destinationLine);
     const isDepartureInAsIsLines = asIsLines.includes(departureLine);
     const isDestinationInAsIsLines = asIsLines.includes(destinationLine);
 
-    // 출발지나 도착지에 TO BE 노선이 있으면 AS IS/TO BE 라벨 표시
+    // 요약 박스 업데이트
+    updateSummaryBox(departureStation, departureLine, destinationStation, destinationLine, asIsTime, toBeTime);
+
     if (isDepartureInToBeLines || isDestinationInToBeLines) {
-        // TO BE 노선만 포함한 경로 요청, 하지만 라벨은 AS IS/TO BE
         fetchRouteSequentially(routeData, '최단 경로', asIsLines, 'TO BE');
     } else if (isDepartureInAsIsLines && isDestinationInAsIsLines) {
-        // AS IS 노선만 사용한 경로 요청 후,
         fetchRouteSequentially(routeData, '최단 경로', toBeLines, 'AS IS')
-        // AS IS와 TO BE 노선을 포함한 경로 요청
         .then(() => fetchRouteSequentially(routeData, '최단 경로', [], 'TO BE'));
     }
 } else {
     alert("출발지 또는 도착지 정보가 없습니다.");
 }
+// 요약 박스 업데이트 함수
+function updateSummaryBox(asIsTime, toBeTime) {
+    let summaryText = '결과 요약: ';
 
-// 경로 요청 함수 (순차적으로 실행)
+    if (asIsTime !== null) {
+        summaryText += `기존 경로에서는 약 ${asIsTime}분이 소요됩니다.`;
+    }
+    if (toBeTime !== null) {
+        summaryText += `\n TO BE 경로에서는 약 ${toBeTime}분 소요될 것으로 예상됩니다.`;
+    }
+
+    document.getElementById('summaryBox').innerText = summaryText;
+}
+
+// 경로 요청 후 요약 박스 업데이트
 async function fetchRouteSequentially(routeData, routeType, excludeLines, statusLabel) {
     try {
         const response = await fetch('/find_shortest_route/', {
@@ -196,19 +230,26 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
 
         const routeResult = await response.json();
 
+
         if (routeResult.route) {
+            // AS IS/TO BE에 따라 소요 시간을 각각 업데이트
+            if (statusLabel === 'AS IS') {
+                asIsTime = routeResult.total_time.toFixed(0);
+                updateSummaryBox(asIsTime, toBeTime);  // 요약 박스에 AS IS 업데이트
+            } else if (statusLabel === 'TO BE') {
+                toBeTime = routeResult.total_time.toFixed(0);
+                updateSummaryBox(asIsTime, toBeTime);  // 요약 박스에 TO BE 업데이트
+            }
+
+            // 나머지 경로 카드 렌더링 로직은 그대로 유지
             let routeInfo = '';
 
-            // 경로 내 모든 역 표시
             routeResult.route.forEach((station, stationIndex) => {
-                // 첫 번째 역
                 if (stationIndex === 0) {
                     routeInfo += `<span><strong>${station.name} (${station.line}호선)</strong></span> >> `;
                 } else if (stationIndex === routeResult.route.length - 1) {
-                    // 마지막 역
                     routeInfo += `<span><strong>${station.name} (${station.line}호선)</strong></span>`;
                 } else {
-                    // 환승 여부에 따라 스타일 다르게 적용
                     if (station.transfer) {
                         routeInfo += `<span class="transfer">${station.name} (${station.line}호선)</span> >> `;
                     } else {
@@ -217,7 +258,6 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                 }
             });
 
-            // 상태 라벨 추가
             let labelHtml = '';
             if (statusLabel === 'TO BE') {
                 labelHtml = `
@@ -233,21 +273,16 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                 `;
             }
 
-            // 경로 정보를 화면에 표시
             const card = document.createElement('div');
             card.classList.add('route-card');
             card.innerHTML = `
-<!--                <h3>${labelHtml}${routeType}: ${routeData.startStation} >> ${routeData.endStation} (예상 소요 시간: ${routeResult.total_time.toFixed(1)} 분)</h3>-->
                 <h3>${labelHtml}${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분)</h3>
                 <p>${routeInfo}</p>
-
                 <button class="detail-button">자세히 보기</button>
             `;
 
-            // 버튼 클릭 시 infoRelaty 페이지로 이동
             card.querySelector('.detail-button').addEventListener('click', function() {
                 alert('준비중입니다.');
-<!--                window.location.href = '/infoRealty';  // AS IS일 때-->
             });
 
             document.getElementById('shortestRoute').appendChild(card);
@@ -256,25 +291,21 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
         }
     } catch (error) {
         console.error('Error fetching the shortest route:', error);
-        const card = document.createElement('div');
-        card.classList.add('route-card');
-        card.innerHTML = `<p>오류 발생: ${error.message}</p>`;
-        document.getElementById('shortestRoute').appendChild(card);
     }
 }
 
-    // CSRF 토큰 가져오기 함수
-    function getCSRFToken() {
-        let csrfToken = null;
-        const cookies = document.cookie.split(';');
-        cookies.forEach(cookie => {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'csrftoken') {
-                csrfToken = value;
-            }
-        });
-        return csrfToken;
-    }
+// CSRF 토큰 가져오기 함수
+function getCSRFToken() {
+    let csrfToken = null;
+    const cookies = document.cookie.split(';');
+    cookies.forEach(cookie => {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            csrfToken = value;
+        }
+    });
+    return csrfToken;
+}
 </script>
 </body>
 </html>

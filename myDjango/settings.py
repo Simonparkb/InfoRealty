@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     # # "43.203.248.192",
-    "ec2-43-203-248-192.ap-northeast-2.compute.amazonaws.com"
+    # "ec2-43-203-248-192.ap-northeast-2.compute.amazonaws.com"
 ]
 
 
