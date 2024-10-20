@@ -11,6 +11,10 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from math import radians, cos, sin, sqrt, atan2
+import logging
+from django.http import JsonResponse
+
+logger = logging.getLogger(__name__)
 
 # 전역 변수로 캐시할 데이터
 stations_cache = None
@@ -138,6 +142,11 @@ def create_optimized_graph():
     return graph_cache
 
 
+
+
+
+
+
 @csrf_exempt
 def find_shortest_route(request):
     if request.method == 'POST':
@@ -244,6 +253,11 @@ def calculate_transfer_time():
     return transfer_time  # 환승 시간은 고정 5분 (예시)
 
 
+
+
+
+
+
 # 두 지점 간의 거리를 계산하는 함수 (Haversine 공식을 사용)
 def calculate_distance(lat1, lon1, lat2, lon2):
     try:
@@ -266,17 +280,6 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     except Exception as e:
         print(f"Error calculating distance: {e}")
         return float('inf')
-
-# 좌표로부터 가장 가까운 역을 찾는 함수
-def calculate_nearest_station(lat, lng, stations):
-    nearest_station = None
-    min_distance = float('inf')
-    for station in stations:
-        distance = calculate_distance(lat, lng, station['latitude'], station['longitude'])
-        if distance < min_distance:
-            min_distance = distance
-            nearest_station = station
-    return nearest_station, min_distance
 
 def find_nearest_stations_by_line(lat, lng, stations):
     # 노선을 기준으로 그룹화
@@ -307,12 +310,6 @@ def find_nearest_stations_by_line(lat, lng, stations):
             # print(f"{line}호선: {nearest_station['name']} 역, 거리: {min_distance:.2f}m")
 
     return nearest_stations
-
-
-import logging
-from django.http import JsonResponse
-
-logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def find_nearest_stations(request):
@@ -360,3 +357,14 @@ def find_nearest_stations(request):
             return JsonResponse({'error': '서버 오류가 발생했습니다.'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+#
+# # 좌표로부터 가장 가까운 역을 찾는 함수
+# def calculate_nearest_station(lat, lng, stations):
+#     nearest_station = None
+#     min_distance = float('inf')
+#     for station in stations:
+#         distance = calculate_distance(lat, lng, station['latitude'], station['longitude'])
+#         if distance < min_distance:
+#             min_distance = distance
+#             nearest_station = station
+#     return nearest_station, min_distance

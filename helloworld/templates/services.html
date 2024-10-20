@@ -87,7 +87,7 @@
 
         /* 라벨을 버튼 위에 배치 */
         .label-container {
-            display: flex;
+            display: inline-block;
             flex-direction: column;
             gap: 5px;
             margin-top: 10px;
@@ -168,12 +168,12 @@ if (departureData && destinationData) {
     // 출발지나 도착지에 TO BE 노선이 있으면 AS IS/TO BE 라벨 표시
     if (isDepartureInToBeLines || isDestinationInToBeLines) {
         // TO BE 노선만 포함한 경로 요청, 하지만 라벨은 AS IS/TO BE
-        fetchRouteSequentially(routeData, '최단 경로', asIsLines, 'AS IS/TO BE');
+        fetchRouteSequentially(routeData, '최단 경로', asIsLines, 'TO BE');
     } else if (isDepartureInAsIsLines && isDestinationInAsIsLines) {
         // AS IS 노선만 사용한 경로 요청 후,
         fetchRouteSequentially(routeData, '최단 경로', toBeLines, 'AS IS')
         // AS IS와 TO BE 노선을 포함한 경로 요청
-        .then(() => fetchRouteSequentially(routeData, '최단 경로', [], 'AS IS/TO BE'));
+        .then(() => fetchRouteSequentially(routeData, '최단 경로', [], 'TO BE'));
     }
 } else {
     alert("출발지 또는 도착지 정보가 없습니다.");
@@ -219,10 +219,9 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
 
             // 상태 라벨 추가
             let labelHtml = '';
-            if (statusLabel === 'AS IS/TO BE') {
+            if (statusLabel === 'TO BE') {
                 labelHtml = `
                     <div class="label-container">
-                        <span class="asis-label">AS IS</span>
                         <span class="tobe-label">TO BE</span>
                     </div>
                 `;
@@ -238,9 +237,10 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
             const card = document.createElement('div');
             card.classList.add('route-card');
             card.innerHTML = `
-                <h3>${routeType}: ${routeData.startStation} >> ${routeData.endStation} (예상 소요 시간: ${routeResult.total_time.toFixed(1)} 분)</h3>
+<!--                <h3>${labelHtml}${routeType}: ${routeData.startStation} >> ${routeData.endStation} (예상 소요 시간: ${routeResult.total_time.toFixed(1)} 분)</h3>-->
+                <h3>${labelHtml}${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분)</h3>
                 <p>${routeInfo}</p>
-                ${labelHtml}
+
                 <button class="detail-button">자세히 보기</button>
             `;
 
