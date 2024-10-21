@@ -124,10 +124,17 @@ p {
     position: relative;
     padding-bottom: 60px; /* 하단에 여유 공간 */
     max-height: 300px; /* 카드의 최대 높이 설정 */
-    overflow-y: auto; /* 내용이 넘치면 스크롤 */
+<!--    overflow-y: auto; /* 내용이 넘치면 스크롤 */-->
+    display: flex;
+    flex-direction: column;
 
 }
-
+.scrollable-content {
+    flex-grow: 1;
+    overflow-y: auto; /* Enable vertical scrolling for the route information */
+    max-height: 200px; /* Limit the height of the scrollable area */
+    padding-right: 10px; /* Add some padding to avoid content being too close to the scrollbar */
+}
 .route-card h3 {
     margin: 0;
     font-size: 1.1rem;
@@ -356,7 +363,9 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
             card.innerHTML = `
 <!--                <h2>${routeData.startStation} -> ${routeData.endStation}</h2>-->
                 <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}</h3>
-                <br><p>${routeInfo}</p><br>
+                <div class="scrollable-content">
+                    <br><p>${routeInfo}</p><br>
+                </div>
                 <button class="detail-button">자세히 보기</button>
             `;
 
