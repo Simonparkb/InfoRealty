@@ -249,8 +249,8 @@ if (departureData && destinationData) {
     const destinationLine = destinationData.nearestStation.line;
 
     const routeData = {
-        startStation:  departureStation + "(" + departureLine + ")",
-        endStation: destinationStation"(" + destinationLine + ")",
+        startStation: "(" + departureLine + ")" + departureStation,
+        endStation: "(" + destinationLine + ")" + destinationStation,
     };
 
     const isDepartureInToBeLines = toBeLines.includes(departureLine);
