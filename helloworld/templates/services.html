@@ -120,9 +120,9 @@
             font-size: 0.8rem; /* 작은 글자 크기 */
             cursor: pointer;
             position: absolute;
-            right: 20px; /* 우측 끝에서 20px */
-            top: 50%; /* 세로 중앙 정렬 */
-            transform: translateY(-50%); /* 세로 중앙 정렬 */
+            left: 50%; /* 수평 중앙 정렬 */
+            bottom: 20px; /* 카드 하단에서 20px */
+            transform: translateX(-50%); /* 수평 중앙 정렬을 위해 50% 이동 */
             transition: background-color 0.3s ease; /* 호버 시 부드러운 색상 변경 */
         }
 
@@ -276,9 +276,9 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
             const card = document.createElement('div');
             card.classList.add('route-card');
             card.innerHTML = `
-                <h3>${labelHtml}<button class="detail-button">자세히 보기</button>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분)</h3>
+                <h3>${labelHtml}${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분)</h3>
                 <p>${routeInfo}</p>
-
+                <button class="detail-button">자세히 보기</button>
             `;
 
             card.querySelector('.detail-button').addEventListener('click', function() {
