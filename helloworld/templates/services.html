@@ -311,31 +311,31 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                 toBeTime = routeResult.total_time.toFixed(0);
                 updateSummaryBox(asIsTime, toBeTime);  // 요약 박스에 TO BE 업데이트
             }
-let routeInfo = '';
+            let routeInfo = '';
 
-routeResult.route.forEach((station, stationIndex) => {
-    // 첫 번째 역
-    if (stationIndex === 0) {
-        routeInfo += `
-            <div class="station">
-                <div class="circle"></div>
-                <div class="station-info">
-                    <strong>${station.name} (${station.line}호선)</strong>
-                </div>
-            </div>`;
-    }
-    // 중간 역과 마지막 역
-    else {
-        routeInfo += `
-            <div class="line"></div> <!-- 이전 역과 연결하는 선 -->
-            <div class="station">
-                <div class="circle"></div>
-                <div class="station-info ${station.transfer ? 'transfer' : ''}">
-                    <strong>${station.name} (${station.line}호선)</strong>
-                </div>
-            </div>`;
-    }
-});
+            routeResult.route.forEach((station, stationIndex) => {
+                // 첫 번째 역
+                if (stationIndex === 0) {
+                    routeInfo += `
+                        <div class="station">
+                            <div class="circle"></div>
+                            <div class="station-info">
+                                <strong>${station.name} (${station.line}호선)</strong>
+                            </div>
+                        </div>`;
+                }
+                // 중간 역과 마지막 역
+                else {
+                    routeInfo += `
+                        <div class="line"></div> <!-- 이전 역과 연결하는 선 -->
+                        <div class="station">
+                            <div class="circle"></div>
+                            <div class="station-info ${station.transfer ? 'transfer' : ''}">
+                                <strong>${station.name} (${station.line}호선)</strong>
+                            </div>
+                        </div>`;
+                }
+            });
             let labelHtml = '';
             if (statusLabel === 'TO BE') {
                 labelHtml = `
@@ -354,8 +354,7 @@ routeResult.route.forEach((station, stationIndex) => {
             const card = document.createElement('div');
             card.classList.add('route-card');
             card.innerHTML = `
-                <h3>${labelHtml}</h3>
-                <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분)</h3>
+                <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}</h3>
                 <br><p>${routeInfo}</p><br>
                 <button class="detail-button">자세히 보기</button>
             `;

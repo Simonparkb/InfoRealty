@@ -263,10 +263,10 @@ function findNearestStation(lat, lng) {
                         let status = '';
 
                         if (asIsLines.includes(line)) {
-                            label = '<span class="asis-label">AS IS</span>';
+                            label = '<span class="asis-label">현재 노선</span>';
                             status = 'AS IS';
                         } else if (toBeLines.includes(line)) {
-                            label = '<span class="tobe-label">TO BE</span>';
+                            label = '<span class="tobe-label">미래 노선</span>';
                             status = 'TO BE';
                         }
 
