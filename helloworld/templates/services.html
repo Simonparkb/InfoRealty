@@ -78,12 +78,21 @@ p {
 }
 
 .circle {
-    width: 12px;
-    height: 12px;
+    width: 24px; /* 원 크기 조정 */
+    height: 24px;
     background-color: #007BFF; /* 원 색상 */
     border-radius: 50%;
     position: relative;
     z-index: 1;
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+}
+
+.checkmark {
+    color: white; /* V의 색상 */
+    font-size: 0.9rem; /* V의 크기 */
+    font-weight: bold; /* V를 굵게 */
 }
 
 .line {
@@ -208,10 +217,23 @@ p {
         margin-bottom: 1px; /* 원과 텍스트 사이의 간격 */
     }
 
-    .circle {
-        width: 10px;
-        height: 10px;
-    }
+.circle {
+    width: 10px;  /* 원 크기 */
+    height: 10px;
+    background-color: #007BFF;  /* 원 색상 */
+    border-radius: 50%;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;  /* 가로 중앙 정렬 */
+    align-items: center;  /* 세로 중앙 정렬 */
+}
+
+.checkmark {
+    color: white;  /* V의 색상 */
+    font-size: 0.5rem;  /* V의 크기 (작게 조정) */
+    font-weight: bold;  /* V를 굵게 표시 */
+    line-height: 1;  /* 텍스트의 줄 높이를 1로 설정해 중앙에 잘 맞도록 */
 
     .line {
         height: 50px;
@@ -318,7 +340,9 @@ routeResult.route.forEach((station, stationIndex) => {
     if (stationIndex === 0) {
         routeInfo += `
             <div class="station">
-                <div class="circle"></div>
+                <div class="circle">
+                    <span class="checkmark">V</span> <!-- 원 안에 V를 표시하는 요소 -->
+                </div>
                 <div class="station-info">
                     <strong>${station.name} (${station.line}호선)</strong>
                 </div>
@@ -329,7 +353,9 @@ routeResult.route.forEach((station, stationIndex) => {
         routeInfo += `
             <div class="line"></div> <!-- 이전 역과 연결하는 선 -->
             <div class="station">
-                <div class="circle"></div>
+                <div class="circle">
+                    <span class="checkmark">V</span> <!-- 원 안에 V를 표시하는 요소 -->
+                </div>
                 <div class="station-info ${station.transfer ? 'transfer' : ''}">
                     <strong>${station.name} (${station.line}호선)</strong>
                 </div>
