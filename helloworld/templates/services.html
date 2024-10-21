@@ -356,8 +356,7 @@ routeResult.route.forEach((station, stationIndex) => {
             card.innerHTML = `
                 <h3>${labelHtml}</h3>
                 <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분)</h3>
-                <br>
-                <p>${routeInfo}</p>
+                <br><p>${routeInfo}</p><br>
                 <button class="detail-button">자세히 보기</button>
             `;
 
