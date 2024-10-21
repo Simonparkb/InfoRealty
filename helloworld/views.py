@@ -54,6 +54,20 @@ def log_activity(user, action):
 def kakaomap(request):
     return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
 
+# Define your view to load and display the CSV data
+def display_csv(request):
+    csv_file_path = os.path.join(settings.BASE_DIR, 'data', 'new_rawdata.csv')
+    stations = []
+
+    # Read the CSV file
+    with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            stations.append(row)
+
+    # Pass the CSV data to the template
+    return render(request, 'display_csv.html', {'stations': stations})
+
 # Helper functions to load stations and build the graph
 def load_stations_from_csv():
     global stations_cache
