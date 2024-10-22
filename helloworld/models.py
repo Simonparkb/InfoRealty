@@ -11,3 +11,15 @@ class ActivityLog(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.action} at {self.timestamp}"
 
+
+from django.db import models
+
+class Station(models.Model):
+    line = models.CharField(max_length=100)  # 노선 이름
+    name = models.CharField(max_length=100)  # 역 이름
+    latitude = models.FloatField()  # 위도
+    longitude = models.FloatField()  # 경도
+    sort_order = models.IntegerField()  # 정렬 순서 (역 순서 관리)
+
+    def __str__(self):
+        return f"{self.line} - {self.name}"

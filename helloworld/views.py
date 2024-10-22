@@ -14,6 +14,19 @@ from math import radians, cos, sin, sqrt, atan2
 import logging
 from django.http import JsonResponse
 
+from django.shortcuts import render
+from helloworld.models import Station
+
+
+def station_map(request):
+    # SQLite 데이터베이스에서 모든 역을 가져옴
+    stations = Station.objects.all()
+
+    return render(request, 'station_list.html', {
+        'stations': stations  # 템플릿에 역 정보 전달
+    })
+
+
 logger = logging.getLogger(__name__)
 
 # 전역 변수로 캐시할 데이터
