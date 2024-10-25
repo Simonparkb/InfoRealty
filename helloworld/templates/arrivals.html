@@ -228,8 +228,8 @@
         element_layer.classList.add('open');
     }
     function findNearestStation(lat, lng) {
-        const asIsLines = ['1', '2', '3', '4', '5', '6', '7']; // AS IS 노선
-        const toBeLines = ['8', '9', 'Sinbundang']; // TO BE 노선
+        const asIsLines = ['1', '2', '3', '4', '5', '6', '7','8', '9']; // AS IS 노선
+        const toBeLines = ['Sinbundang','Suinbundang','경강선']; // TO BE 노선
 
         fetch('/find_nearest_stations/', {
             method: 'POST',

@@ -353,6 +353,16 @@
         map.setCenter(moveLatLon); // 파라미터로 전달받은 좌표로 지도 중심 이동
     }
 
+
+    // 선택 좌표를 URL에 추가하는 함수
+    function updateUrlWithCoordinates(lat, lng) {
+        const newUrl = `${window.location.pathname}?lat=${lat}&lng=${lng}`;
+        history.replaceState(null, '', newUrl);
+    }
+
+
+
+
     // 출발지 주소 검색 버튼 클릭 시 좌표 입력
     document.getElementById('startAddressBtn').addEventListener('click', function() {
         new daum.Postcode({
@@ -388,6 +398,10 @@
         document.getElementById('startLat').value = latlng.getLat();
         document.getElementById('startLng').value = latlng.getLng();
         document.getElementById('startLatLng').value = latlng.getLat() + ', ' + latlng.getLng();
+
+
+            // URL에 선택된 좌표 반영
+    updateUrlWithCoordinates(latlng.getLat(), latlng.getLng());
     });
 
     // 주소 검색 후 좌표 입력
@@ -500,126 +514,140 @@
         }
     }
 
-// 서버에서 선택된 역 정보를 가져오는 함수
-function fetchStationDetails(stationName, stationLine) {
-    fetch(`/stations/${stationName}/${stationLine}/`)  // 선택된 역 이름과 노선을 URL로 전송
-        .then(response => response.json())
+    // 서버에서 선택된 역 정보를 가져오는 함수
+    function fetchStationDetails(stationName, stationLine) {
+        fetch(`/stations/${stationName}/${stationLine}/`)  // 선택된 역 이름과 노선을 URL로 전송
+            .then(response => response.json())
+            .then(data => {
+                // 데이터를 화면에 표시 (기존 함수 호출)
+                displayStationInfo(data);
+
+                // Store the selected station's information
+                selectedStation = data;
+
+                // Populate the fields with the selected station's information
+                document.getElementById('startLat').value = data.latitude;
+                document.getElementById('startLng').value = data.longitude;
+                document.getElementById('name').value = data.name;
+                document.getElementById('line').value = data.line;
+            })
+            .catch(error => {
+                console.error('역 정보를 가져오는 중 오류 발생:', error);
+            });
+    }
+    // Reset input fields and displayed station info
+    function resetInputFields() {
+        document.getElementById('startLat').value = '';
+        document.getElementById('startLng').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('line').value = '';
+        document.getElementById('result').innerHTML = ''; // 표시된 역 정보 초기화
+        selectedStation = null;  // 선택된 역 정보 초기화
+    }
+
+
+    // Add a new station, with an optional "before" or "after" position
+    document.getElementById('addStationButton').addEventListener('click', function() {
+        const name = document.getElementById('name').value;
+        const line = document.getElementById('line').value;
+        const latitude = parseFloat(document.getElementById('startLat').value);
+        const longitude = parseFloat(document.getElementById('startLng').value);
+
+        if (!name || isNaN(latitude) || isNaN(longitude)) {
+            alert("모든 필드를 채워주세요.");
+            return;
+        }
+
+        // Get the selected position (either 'before' or 'after')
+        const position = document.getElementById('position').value;
+
+        // Show message if no line is selected
+        if (!line) {
+            document.getElementById('lineInfoMessage').style.display = 'block';
+        } else {
+            document.getElementById('lineInfoMessage').style.display = 'none';
+        }
+
+        // Prepare the new station data, including the sort order from the selected station if any
+        const newStation = {
+            name: name,
+            line: line,
+            latitude: latitude,
+            longitude: longitude,
+            position: position
+        };
+
+        // Include selected station's sort order if available
+        if (selectedStation && selectedStation.sort_order) {
+            newStation.selectedStationSortOrder = selectedStation.sort_order;
+        }
+
+        // Perform the fetch request to add the new station
+        fetch('/stations/add/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()  // Include CSRF token if required
+            },
+            body: JSON.stringify(newStation)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => { throw new Error(data.message); });
+            }
+            return response.json();
+        })
         .then(data => {
-            // 데이터를 화면에 표시 (기존 함수 호출)
-            displayStationInfo(data);
-
-            // Store the selected station's information
-            selectedStation = data;
-
-            // Populate the fields with the selected station's information
-            document.getElementById('startLat').value = data.latitude;
-            document.getElementById('startLng').value = data.longitude;
-            document.getElementById('name').value = data.name;
-            document.getElementById('line').value = data.line;
+            alert("새 역이 추가되었습니다!");
+            resetInputFields()
+            console.log(data);
+            location.reload();  // 페이지 새로고침
         })
         .catch(error => {
-            console.error('역 정보를 가져오는 중 오류 발생:', error);
+            alert(error.message);
+            console.error('Error adding station:', error);
         });
-}
-
-
-// Add a new station, with an optional "before" or "after" position
-document.getElementById('addStationButton').addEventListener('click', function() {
-    const name = document.getElementById('name').value;
-    const line = document.getElementById('line').value;
-    const latitude = parseFloat(document.getElementById('startLat').value);
-    const longitude = parseFloat(document.getElementById('startLng').value);
-
-    if (!name || isNaN(latitude) || isNaN(longitude)) {
-        alert("모든 필드를 채워주세요.");
-        return;
-    }
-
-    // Get the selected position (either 'before' or 'after')
-    const position = document.getElementById('position').value;
-
-    // Show message if no line is selected
-    if (!line) {
-        document.getElementById('lineInfoMessage').style.display = 'block';
-    } else {
-        document.getElementById('lineInfoMessage').style.display = 'none';
-    }
-
-    // Prepare the new station data, including the sort order from the selected station if any
-    const newStation = {
-        name: name,
-        line: line,
-        latitude: latitude,
-        longitude: longitude,
-        position: position
-    };
-
-    // Include selected station's sort order if available
-    if (selectedStation && selectedStation.sort_order) {
-        newStation.selectedStationSortOrder = selectedStation.sort_order;
-    }
-
-    // Perform the fetch request to add the new station
-    fetch('/stations/add/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()  // Include CSRF token if required
-        },
-        body: JSON.stringify(newStation)
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => { throw new Error(data.message); });
-        }
-        return response.json();
-    })
-    .then(data => {
-        alert("새 역이 추가되었습니다!");
-        console.log(data);
-    })
-    .catch(error => {
-        alert(error.message);
-        console.error('Error adding station:', error);
     });
-});
 
-// Delete the selected station
-document.getElementById('deleteStationButton').addEventListener('click', function() {
-    if (!selectedStation || !selectedStation.name || !selectedStation.line) {
-        alert("먼저 삭제할 역을 선택하세요.");
-        return;
-    }
-
-    // Confirm deletion
-    if (!confirm('정말로 삭제하시겠습니까?')) {
-        return;
-    }
-
-    // Send DELETE request to the server using name and line
-    fetch(`/stations/delete/${selectedStation.name}/${selectedStation.line}/`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRFToken': getCSRFToken()  // Include CSRF token if required
+    // Delete the selected station
+    document.getElementById('deleteStationButton').addEventListener('click', function() {
+        if (!selectedStation || !selectedStation.name || !selectedStation.line) {
+            alert("먼저 삭제할 역을 선택하세요.");
+            return;
         }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to delete station');
-        }
-        return response.json();
-    })
-    .then(data => {
-        alert("역이 삭제되었습니다.");
-        console.log(data);
 
-        // Optionally, reset the form or reload the station list
-    })
-    .catch(error => {
-        console.error('Error deleting station:', error);
-        alert("역 삭제 중 오류가 발생했습니다.");
+        // Confirm deletion
+        if (!confirm('정말로 삭제하시겠습니까?')) {
+            return;
+        }
+
+        // Send DELETE request to the server using name and line
+        fetch(`/stations/delete/${selectedStation.name}/${selectedStation.line}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken()  // Include CSRF token if required
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete station');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert("역이 삭제되었습니다.");
+            resetInputFields()
+            console.log(data);
+
+            location.reload();  // 페이지 새로고침
+
+            // Optionally, reset the form or reload the station list
+        })
+        .catch(error => {
+            console.error('Error deleting station:', error);
+            alert("역 삭제 중 오류가 발생했습니다.");
+        });
     });
-});
 
     // 역 정보를 화면에 간결하게 표시하는 함수
     function displayStationInfo(station) {
@@ -635,33 +663,10 @@ document.getElementById('deleteStationButton').addEventListener('click', functio
         `;
     }
 
-    // 마커를 생성하는 함수
-    function createMarkers(data) {
-        data.forEach(station => {
-            var markerPosition = new kakao.maps.LatLng(station.latitude, station.longitude);
-            var marker = new kakao.maps.Marker({
-                position: markerPosition,
-                title: station.name
-            });
-
-            // 정보창 생성
-            var infowindow = new kakao.maps.InfoWindow({
-                content: `<div style="padding:5px;"> ${station.name} (${station.line}호선) </div>`
-            });
-
-            // 마커 클릭 시 정보창 열기
-            kakao.maps.event.addListener(marker, 'click', function() {
-                infowindow.open(map, marker);
-            });
-
-            marker.setMap(map);  // 마커를 지도에 추가
-        });
-    }
-
-    // 페이지 로드 시 역 데이터를 가져옴
-    window.onload = function() {
-        fetchStationData();
-    };
+<!--    // 페이지 로드 시 역 데이터를 가져옴-->
+<!--    window.onload = function() {-->
+<!--       location.reload();  // 페이지 새로고침-->
+<!--    };-->
 
     // Reset button functionality to clear input fields
     document.getElementById('resetButton').addEventListener('click', function() {
