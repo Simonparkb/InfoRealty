@@ -1,0 +1,261 @@
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 12702
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 5247
+"POST /find_nearest_stations/ HTTP/1.1" 200 290
+"GET /arrivals/ HTTP/1.1" 200 12728
+"POST /find_nearest_stations/ HTTP/1.1" 200 302
+"GET /services/ HTTP/1.1" 200 11377
+"POST /find_shortest_route/ HTTP/1.1" 200 913
+"POST /find_shortest_route/ HTTP/1.1" 200 913
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /services/ HTTP/1.1" 200 11377
+"POST /find_shortest_route/ HTTP/1.1" 200 913
+"POST /find_shortest_route/ HTTP/1.1" 200 913
+"GET /services/ HTTP/1.1" 200 11377
+"POST /find_shortest_route/ HTTP/1.1" 200 913
+"POST /find_shortest_route/ HTTP/1.1" 200 913
+"GET / HTTP/1.1" 200 82981
+"GET /stations/%EC%96%91%EC%9E%AC%EC%8B%9C%EB%AF%BC%EC%9D%98%EC%88%B2/Shinbundang/ HTTP/1.1" 200 154
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 28197
+"GET / HTTP/1.1" 200 28197
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 82982
+"GET /stations/%EC%96%91%EC%9E%AC%EC%8B%9C%EB%AF%BC%EC%9D%98%EC%88%B2/Shinbundang/ HTTP/1.1" 200 154
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 28197
+"GET / HTTP/1.1" 200 28197
+"GET / HTTP/1.1" 200 28197
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 82982
+"GET /stations/%EC%84%9C%EC%9A%B8/1/ HTTP/1.1" 200 105
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68964
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68964
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 82982
+"GET /stations/%EC%88%98%EC%84%9C/3/ HTTP/1.1" 200 106
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 82982
+"GET /stations/%EB%8F%99%EB%AC%98%EC%95%9E/1/ HTTP/1.1" 200 112
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 387, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /stations/%EB%B2%84%ED%8B%B0%EA%B3%A0%EA%B0%9C/6/ HTTP/1.1" 200 118
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 387, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /get_line_images/ HTTP/1.1" 200 960
+"GET /stations/%EB%AA%A8%EB%9E%80/8/ HTTP/1.1" 200 107
+Internal Server Error: /stations/add/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 386, in add_station
+    station_logger.info(f"Station added: {station.name} (Line: {station.line}) by user: {request.user}")
+                                          ^^^^^^^
+NameError: name 'station' is not defined
+"POST /stations/add/ HTTP/1.1" 500 68944
+"GET /stations/%EB%AA%A8%EB%9E%80/8/ HTTP/1.1" 200 107
+Internal Server Error: /stations/delete/¸ð¶õ/8/
+Traceback (most recent call last):
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\python\python3114\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py", line 437, in delete_station
+    station_logger.info(f"Station deleted: {station.name} (Line: {station.line}) by user: {request.user}")
+                                            ^^^^^^^
+NameError: name 'station' is not defined
+"DELETE /stations/delete/%EB%AA%A8%EB%9E%80/8/ HTTP/1.1" 500 70041
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\helloworld\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\parkk\PycharmProjects\infoRealty\myDjango\myDjango\settings.py changed, reloading.
