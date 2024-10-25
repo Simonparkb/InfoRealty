@@ -27,7 +27,7 @@
     /* 입력 필드 스타일 */
     .coordinates-input input,
     .coordinates-input select {
-        width: 180px;
+        width: 120px;
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -35,17 +35,17 @@
 
     /* 버튼 스타일 */
     .coordinates-input button {
-        padding: 10px 20px;
+        padding: 10px 10px;
         font-size: 1em;
-        background-color: #4CAF50;
-        color: white;
+        background-color: skyblue;
+        color: black;
         border: none;
         border-radius: 4px;
         cursor: pointer;
     }
 
     .coordinates-input button:hover {
-        background-color: #45a049;
+        background-color: DeepSkyBlue;
     }
 
     /* 결과 영역 스타일 */
@@ -228,8 +228,8 @@
     <label for="name">역명:</label>
     <input type="text" id="name">
 
-<!--    <label for="line">Line:</label>-->
-    <input type="text" id="line" style="display: none;">
+    <label for="line">노선:</label>
+    <input type="text" id="line">
 
     <button id="resetButton">초기화</button>
 
@@ -242,10 +242,9 @@
     </select>
         <button id="addStationButton">역 추가</button>
         <button id="deleteStationButton">역 삭제</button>
-<!--        <button id="addStationButton">신규 노선 추가</button>-->
 
-        <button id="showImagesButton">노선 정보 보기</button>
-
+        <button id="showImagesButton">노선 정보</button>
+        <button id="addNewLineButton">신규 노선 추가</button>
         <div class="overlay" id="overlay"></div>
         <div class="popup" id="imagePopup">
             <div class="popup-header">
@@ -568,6 +567,12 @@
             document.getElementById('lineInfoMessage').style.display = 'none';
         }
 
+        // Check if selected station exists and if the line matches
+        if (selectedStation && selectedStation.line !== line) {
+            alert("선택한 역과 라인이 일치하지 않습니다. 같은 노선에만 추가할 수 있습니다.");
+            return;
+        }
+
         // Prepare the new station data, including the sort order from the selected station if any
         const newStation = {
             name: name,
@@ -714,6 +719,53 @@
         popup.style.display = 'none';
         overlay.style.display = 'none';
     });
+
+
+document.getElementById('addNewLineButton').addEventListener('click', function() {
+    const name = document.getElementById('name').value;
+    const line = document.getElementById('line').value;
+    const latitude = parseFloat(document.getElementById('startLat').value);
+    const longitude = parseFloat(document.getElementById('startLng').value);
+
+    if (!name || isNaN(latitude) || isNaN(longitude) || !line) {
+        alert("모든 필드를 채워주세요.");
+        return;
+    }
+
+    // 새로운 역 데이터를 준비합니다
+    const newStation = {
+        name: name,
+        line: line,
+        latitude: latitude,
+        longitude: longitude
+    };
+
+    // 서버로 새로운 라인을 추가 요청합니다
+    fetch('/stations/add_new_line/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()  // CSRF 토큰 포함
+        },
+        body: JSON.stringify(newStation)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => { throw new Error(data.message); });
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert("신규 라인이 추가되었습니다!");
+        resetInputFields();
+        console.log(data);
+        location.reload();  // 페이지 새로고침
+    })
+    .catch(error => {
+        alert("신규 라인 추가 중 오류가 발생했습니다: " + error.message);
+        console.error('Error adding new line:', error);
+    });
+});
 
     // Helper function to get the CSRF token
     function getCSRFToken() {

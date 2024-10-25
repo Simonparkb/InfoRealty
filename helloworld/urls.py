@@ -14,4 +14,5 @@ urlpatterns = [
     path('stations/add/', views.add_station, name='add_station'),  # Add station URL pattern
     path('stations/delete/<str:station_name>/<str:station_line>/', views.delete_station, name='delete_station'),
     path('get_line_images/', views.get_line_images, name='get_line_images'),
+    path('stations/add_new_line/', views.add_new_line, name='add_new_line'),
 ]
