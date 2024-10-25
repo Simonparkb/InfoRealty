@@ -1,30 +1,30 @@
-from .models import ActivityLog
-import math
-import csv
+# Standard library imports
 import os
+import csv
 import json
+import math
+import logging
 from collections import defaultdict
-from django.shortcuts import render
+from math import radians, cos, sin, sqrt, atan2
+
+# Third-party imports
 import pandas as pd
 import networkx as nx
+
+# Django imports
 from django.conf import settings
+from django.db import transaction
+from django.db.models import F, Max  # F and Max for database field operations
+from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from math import radians, cos, sin, sqrt, atan2
-import logging
-from django.http import JsonResponse
-
-from django.shortcuts import render
-from helloworld.models import Station
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 
-def station_map(request):
-    # SQLite 데이터베이스에서 모든 역을 가져옴
-    stations = Station.objects.all()
 
-    return render(request, 'station_list.html', {
-        'stations': stations  # 템플릿에 역 정보 전달
-    })
+# Local app imports
+from .models import Station  # Importing only Station from .models
 
 
 logger = logging.getLogger(__name__)
@@ -49,9 +49,9 @@ line_travel_times = {
 # 환승 시간을 정의
 transfer_time = 5.0  # 환승 시간 5분
 
+
 def departures(request):
     return render(request, 'departures.html')
-
 
 def arrivals(request):
     return render(request, 'arrivals.html')
@@ -63,43 +63,32 @@ def log_activity(user, action):
     ActivityLog.objects.create(user=user, action=action)
 
 
-
 def kakaomap(request):
     return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
 
-# Define your view to load and display the CSV data
-def display_csv(request):
-    csv_file_path = os.path.join(settings.BASE_DIR, 'data', 'new_rawdata.csv')
-    stations = []
+def station_map(request):
+    stations = Station.objects.all()  # 모든 역 데이터 가져오기
+    return render(request, 'kakao.html', {
+        'stations': stations  # 템플릿에 역 정보 전달
+    })
 
-    # Read the CSV file
-    with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            stations.append(row)
-
-    # Pass the CSV data to the template
-    return render(request, 'display_csv.html', {'stations': stations})
-
-# Helper functions to load stations and build the graph
+# Helper function to load stations from the database
 def load_stations_from_csv():
     global stations_cache
     if stations_cache is None:
-        csv_file_path = os.path.join(settings.BASE_DIR, 'data', 'new_rawdata.csv')
         stations = []
         station_map = defaultdict(list)
 
-        with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                station_info = {
-                    'name': row['name'],
-                    'line': row['line'],
-                    'latitude': float(row['Latitude']),
-                    'longitude': float(row['Longitude']),
-                    # 환승 정보는 CSV에서 읽지 않고 나중에 계산됨
-                }
-                station_map[row['name']].append(station_info)
+        # Retrieve all station records from the database
+        for station in Station.objects.all():
+            station_info = {
+                'name': station.name,
+                'line': station.line,
+                'latitude': station.latitude,
+                'longitude': station.longitude,
+                # 환승 정보는 DB에서 읽지 않고 나중에 계산됨
+            }
+            station_map[station.name].append(station_info)
 
         for station_name, station_list in station_map.items():
             # 동일한 역 이름이 여러 노선에 걸쳐 있을 경우 환승역으로 처리
@@ -107,70 +96,65 @@ def load_stations_from_csv():
             for station in station_list:
                 station['transfer'] = is_transfer  # 환승 여부를 계산
             stations.extend(station_list)
-
-        # 캐시에 저장
+        print(stations)
+        # Cache the results
         stations_cache = stations
-
     return stations_cache
 
+
+# Function to create an optimized graph using data from the database
 def create_optimized_graph():
     global graph_cache
     if graph_cache is None:
-        csv_file_path = os.path.join(settings.BASE_DIR, 'data', 'new_rawdata.csv')
-
-        # CSV 파일 읽기
-        try:
-            df = pd.read_csv(csv_file_path)
-            # print("CSV 파일 읽기 성공")
-        except Exception as e:
-            print(f"CSV 파일을 읽는 중 오류가 발생했습니다: {e}")
-            return None
-
-        # 무방향 그래프 생성
+        # Initialize an undirected graph
         G = nx.Graph()
 
         try:
-            # 1. 같은 노선에서 인접한 역들 간의 연결 (가중치: 호선별 이동시간)
-            for line, line_data in df.groupby('line'):
-                line_data = line_data.reset_index(drop=True)
+            # Retrieve all station records from the database
+            stations = Station.objects.all()
+            # Dictionary to group stations by line and name
+            stations_by_line = defaultdict(list)
+            stations_by_name = defaultdict(list)
 
-                travel_time = line_travel_times.get(str(line), 2.0)  # 기본 이동시간 2분
+            # Populate the stations_by_line and stations_by_name dictionaries
+            for station in stations:
+                stations_by_line[station.line].append(station)
+                stations_by_name[station.name].append(station)
 
-                for i in range(len(line_data) - 1):
-                    # 역과 노선을 함께 연결
+            # 1. Connect adjacent stations on the same line with weighted edges
+            for line, line_stations in stations_by_line.items():
+                # Sort by 'sort_order' to ensure adjacency
+                line_stations.sort(key=lambda x: x.sort_order)
+                travel_time = line_travel_times.get(str(line), 2.0)  # Default travel time of 2 minutes
+
+                for i in range(len(line_stations) - 1):
+                    # Connect consecutive stations on the same line
                     G.add_edge(
-                        f"({line}){line_data.loc[i, 'name']}",
-                        f"({line}){line_data.loc[i + 1, 'name']}",
-                        weight=travel_time  # 호선별 이동 시간 적용
+                        f"({line}){line_stations[i].name}",
+                        f"({line}){line_stations[i + 1].name}",
+                        weight=travel_time  # Apply travel time by line
                     )
-                # print(f"{line}호선 연결 완료")
 
-            # 2. 같은 이름을 가진 다른 노선 간의 연결 (환승, 가중치: 환승 시간)
-            for station_name, matching_stations in df.groupby('name'):
+            # 2. Connect stations with the same name on different lines (transfer stations)
+            for station_name, matching_stations in stations_by_name.items():
                 if len(matching_stations) > 1:
-                    for i, row in matching_stations.iterrows():
-                        for j, row2 in matching_stations.iterrows():
-                            if i < j:
-                                # 같은 이름의 다른 노선 간 연결 (환승)
-                                G.add_edge(
-                                    f"({row['line']}){row['name']}",
-                                    f"({row2['line']}){row2['name']}",
-                                    weight=transfer_time  # 환승 시간 적용
-                                )
-            # print("환승 연결 완료")
+                    for i in range(len(matching_stations) - 1):
+                        for j in range(i + 1, len(matching_stations)):
+                            # Add an edge between stations on different lines with the same name
+                            G.add_edge(
+                                f"({matching_stations[i].line}){matching_stations[i].name}",
+                                f"({matching_stations[j].line}){matching_stations[j].name}",
+                                weight=transfer_time  # Apply transfer time
+                            )
 
+            # Cache the generated graph
             graph_cache = G
-            # print("그래프 생성 완료")
 
         except Exception as e:
-            print(f"그래프 생성 중 오류가 발생했습니다: {e}")
+            print(f"An error occurred while creating the graph: {e}")
             return None
 
     return graph_cache
-
-
-
-
 
 
 
@@ -281,10 +265,6 @@ def calculate_transfer_time():
 
 
 
-
-
-
-
 # 두 지점 간의 거리를 계산하는 함수 (Haversine 공식을 사용)
 def calculate_distance(lat1, lon1, lat2, lon2):
     try:
@@ -384,14 +364,127 @@ def find_nearest_stations(request):
             return JsonResponse({'error': '서버 오류가 발생했습니다.'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-#
-# # 좌표로부터 가장 가까운 역을 찾는 함수
-# def calculate_nearest_station(lat, lng, stations):
-#     nearest_station = None
-#     min_distance = float('inf')
-#     for station in stations:
-#         distance = calculate_distance(lat, lng, station['latitude'], station['longitude'])
-#         if distance < min_distance:
-#             min_distance = distance
-#             nearest_station = station
-#     return nearest_station, min_distance
+
+@csrf_exempt
+def add_station(request):
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+
+            # 필수 필드 확인
+            required_fields = ['name', 'latitude', 'longitude', 'line']
+            if not all(field in data for field in required_fields):
+                return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
+
+            # 중복 역 방지
+            if Station.objects.filter(name=data['name'], latitude=data['latitude'], longitude=data['longitude']).exists():
+                return JsonResponse({'status': 'error', 'message': 'A station with the same name and location already exists.'}, status=400)
+
+            # 역 추가 위치 관련 변수
+            position = data.get('position')
+            selected_station_sort_order = data.get('selectedStationSortOrder')
+            sort_order = None
+
+            if position and selected_station_sort_order is not None:
+                # `sort_order`를 선택한 역을 기준으로 설정
+                if position == 'before':
+                    Station.objects.filter(line=data['line'], sort_order__gte=selected_station_sort_order).update(sort_order=F('sort_order') + 1)
+                    sort_order = selected_station_sort_order
+                elif position == 'after':
+                    Station.objects.filter(line=data['line'], sort_order__gt=selected_station_sort_order).update(sort_order=F('sort_order') + 1)
+                    sort_order = selected_station_sort_order + 1
+            else:
+                # 지정된 위치가 없을 경우, `sort_order`를 노선의 마지막 순서로 설정
+                max_sort_order = Station.objects.filter(line=data['line']).aggregate(Max('sort_order'))['sort_order__max']
+                sort_order = max_sort_order + 1 if max_sort_order is not None else 1
+
+            # 새 역 생성 및 저장
+            new_station = Station(
+                name=data['name'],
+                line=data['line'],
+                latitude=data['latitude'],
+                longitude=data['longitude'],
+                sort_order=sort_order
+            )
+            new_station.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Station added successfully'}, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def delete_station(request, station_name, station_line):
+    if request.method == 'DELETE':
+        try:
+            # 삭제할 역을 `name`과 `line`으로 필터링, 정확한 하나의 역만 삭제
+            station_to_delete = Station.objects.filter(name=station_name, line=station_line).first()
+            if not station_to_delete:
+                return JsonResponse({'status': 'error', 'message': 'Station not found'}, status=404)
+
+            # 삭제할 역의 `sort_order`를 가져온 후 삭제
+            sort_order_to_delete = station_to_delete.sort_order
+            station_to_delete.delete()
+
+            # 삭제한 역 이후의 역들의 `sort_order`를 재조정
+            Station.objects.filter(line=station_line, sort_order__gt=sort_order_to_delete).update(sort_order=F('sort_order') - 1)
+
+            return JsonResponse({'status': 'success', 'message': 'Station deleted successfully'}, status=200)
+
+        except Station.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Station not found'}, status=404)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+def station_detail(request, station_name, station_line):
+    print(f"요청된 역 이름: {station_name}, 요청된 노선: {station_line}")  # 디버깅용 출력
+
+    # DB에서 역 이름과 노선 번호로 검색
+    station = Station.objects.filter(name__iexact=station_name, line__iexact=station_line).first()
+
+    if not station:
+        return JsonResponse({'error': '역을 찾을 수 없습니다.'}, status=404)
+
+    station_data = {
+        'name': station.name,
+        'line': station.line,
+        'latitude': station.latitude,
+        'longitude': station.longitude,
+        'sort_order': station.sort_order
+    }
+
+    print(f"찾은 역 정보: {station_data}")  # 디버깅용 출력
+    return JsonResponse(station_data)
+
+
+def get_line_images(request):
+    images_dir = os.path.join(settings.STATICFILES_DIRS[0], 'image')
+    images = []
+
+    if os.path.exists(images_dir):
+        for image_file in os.listdir(images_dir):
+            if image_file.endswith('.png'):  # PNG 파일만 필터링
+                images.append({
+                    'name': image_file,
+                    'url': f'/static/image/{image_file}'
+                })
+
+    return JsonResponse({'images': images})
+
+# Define your view to load and display the CSV data
+def display_csv(request):
+    csv_file_path = os.path.join(settings.BASE_DIR, 'data', 'new_rawdata.csv')
+    stations = []
+
+    # Read the CSV file
+    with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            stations.append(row)
+
+    # Pass the CSV data to the template
+    return render(request, 'display_csv.html', {'stations': stations})

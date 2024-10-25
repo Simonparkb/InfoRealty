@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     # # "43.203.248.192",
-    # "ec2-43-203-248-192.ap-northeast-2.compute.amazonaws.com"
+    # "http://ec2-43-202-40-102.ap-northeast-2.compute.amazonaws.com/"
 ]
 
 
@@ -119,7 +119,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-STATIC_URL = 'static/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -129,7 +129,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 #
 # STATIC_URL = '/static/'
-
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    os.path.join(BASE_DIR, 'static'),  # 개발용 정적 파일 디렉토리
 ]
