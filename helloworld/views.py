@@ -418,15 +418,15 @@ def add_station(request):
             sort_order = None
 
             if position and selected_station_sort_order is not None:
-                # 특정 위치부터 해당 위치 이후 역들만 sort_order +1 (호선 구분 없이)
+                # 특정 위치부터 해당 노선 내 역들의 sort_order만 +1
                 if position == 'before':
-                    Station.objects.filter(sort_order__gte=selected_station_sort_order).update(sort_order=F('sort_order') + 1)
+                    Station.objects.filter(line=data['line'], sort_order__gte=selected_station_sort_order).update(sort_order=F('sort_order') + 1)
                     sort_order = selected_station_sort_order
                 elif position == 'after':
-                    Station.objects.filter(sort_order__gt=selected_station_sort_order).update(sort_order=F('sort_order') + 1)
+                    Station.objects.filter(line=data['line'], sort_order__gt=selected_station_sort_order).update(sort_order=F('sort_order') + 1)
                     sort_order = selected_station_sort_order + 1
             else:
-                # 지정된 위치가 없을 경우, sort_order를 노선 내 마지막 순서로 설정
+                # 지정된 위치가 없을 경우, 해당 노선 내 마지막 sort_order + 1
                 max_sort_order = Station.objects.filter(line=data['line']).aggregate(Max('sort_order'))['sort_order__max']
                 sort_order = max_sort_order + 1 if max_sort_order is not None else 1
 
@@ -451,7 +451,7 @@ def add_station(request):
 def delete_station(request, station_name, station_line):
     if request.method == 'DELETE':
         try:
-            # 삭제할 역을 `name`과 `line`으로 필터링, 정확한 하나의 역만 삭제
+            # 삭제할 역을 `name`과 `line`으로 필터링하여 정확한 하나의 역만 삭제
             station_to_delete = Station.objects.filter(name=station_name, line=station_line).first()
             if not station_to_delete:
                 return JsonResponse({'status': 'error', 'message': 'Station not found'}, status=404)
@@ -460,8 +460,8 @@ def delete_station(request, station_name, station_line):
             sort_order_to_delete = station_to_delete.sort_order
             station_to_delete.delete()
 
-            # 삭제한 역의 위치 이후 역들의 sort_order만 -1
-            Station.objects.filter(sort_order__gt=sort_order_to_delete).update(sort_order=F('sort_order') - 1)
+            # 삭제한 역의 위치 이후 해당 노선 내 역들의 sort_order만 -1
+            Station.objects.filter(line=station_line, sort_order__gt=sort_order_to_delete).update(sort_order=F('sort_order') - 1)
 
             return JsonResponse({'status': 'success', 'message': 'Station deleted successfully'}, status=200)
 
@@ -470,28 +470,28 @@ def delete_station(request, station_name, station_line):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
-@csrf_exempt
-def delete_station(request, station_name, station_line):
-    if request.method == 'DELETE':
-        try:
-            # 삭제할 역을 `name`과 `line`으로 필터링, 정확한 하나의 역만 삭제
-            station_to_delete = Station.objects.filter(name=station_name, line=station_line).first()
-            if not station_to_delete:
-                return JsonResponse({'status': 'error', 'message': 'Station not found'}, status=404)
-
-            # 삭제할 역의 sort_order를 가져온 후 삭제
-            sort_order_to_delete = station_to_delete.sort_order
-            station_to_delete.delete()
-
-            # 삭제한 역의 위치 이후 역들의 sort_order만 -1
-            Station.objects.filter(sort_order__gt=sort_order_to_delete).update(sort_order=F('sort_order') - 1)
-
-            return JsonResponse({'status': 'success', 'message': 'Station deleted successfully'}, status=200)
-
-        except Station.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Station not found'}, status=404)
-
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+# @csrf_exempt
+# def delete_station(request, station_name, station_line):
+#     if request.method == 'DELETE':
+#         try:
+#             # 삭제할 역을 `name`과 `line`으로 필터링, 정확한 하나의 역만 삭제
+#             station_to_delete = Station.objects.filter(name=station_name, line=station_line).first()
+#             if not station_to_delete:
+#                 return JsonResponse({'status': 'error', 'message': 'Station not found'}, status=404)
+#
+#             # 삭제할 역의 sort_order를 가져온 후 삭제
+#             sort_order_to_delete = station_to_delete.sort_order
+#             station_to_delete.delete()
+#
+#             # 삭제한 역의 위치 이후 역들의 sort_order만 -1
+#             Station.objects.filter(sort_order__gt=sort_order_to_delete).update(sort_order=F('sort_order') - 1)
+#
+#             return JsonResponse({'status': 'success', 'message': 'Station deleted successfully'}, status=200)
+#
+#         except Station.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'Station not found'}, status=404)
+#
+#     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 def station_detail(request, station_name, station_line):
     print(f"요청된 역 이름: {station_name}, 요청된 노선: {station_line}")  # 디버깅용 출력
 
