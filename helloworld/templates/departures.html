@@ -90,18 +90,38 @@
     }
 
     #layer {
-        display: none;
         position: fixed;
         z-index: 1000;
-        background-color: #2b2b2b;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-        -webkit-overflow-scrolling: touch;
-        transition: opacity 0.3s ease;
+        width: 90vw;
+        max-height: 60vh; /* 최대 높이 설정 */
+        left: 50%;
+        bottom: 5vh; /* 화면 하단에서 조금 띄움 */
+        transform: translateX(-50%);
+        background-color: #1e1e1e;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+        overflow-y: auto; /* 내부 스크롤 */
+        border-radius: 10px; /* 둥근 모서리 */
     }
 
     #layer.open {
         display: block;
         opacity: 1;
+    }
+
+    #btnCloseLayer {
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        position: absolute;
+        right: 10px;
+        top: 15px;
+        z-index: 1;
+    }
+
+    #btnCloseLayer:hover {
+        transform: scale(1.1);
     }
 
     #layer img {
@@ -169,6 +189,7 @@
     }
 
 </style>
+        <link rel="stylesheet" href="styles.min.css">
 </head>
 <body>
 
@@ -215,7 +236,7 @@
      ">
 
 </div>
-<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268&libraries=services"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268&libraries=services" ></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" async defer></script>
 <script>
     var element_layer = document.getElementById('layer');
@@ -391,6 +412,6 @@ function findNearestStation(lat, lng) {
 <!--    });-->
 
 </script>
-
+    <script src="script.min.js" defer></script>
 </body>
 </html>
