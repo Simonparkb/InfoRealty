@@ -254,7 +254,29 @@
             <div id="imageList"></div>
         </div>
 </div>
+<!-- Circular button in the bottom-right corner -->
+<div id="redirectButton"
+     onclick="window.location.href='/admin';"
+     style="
+         position: fixed;
+         bottom: 20px;
+         right: 20px;
+         width: 40px;
+         height: 40px;
+         background-color: black;
+         color: white;
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         cursor: pointer;
+         font-size: 24px;
+         font-weight: bold;
+         line-height: 1;
+         z-index: 1000;
+     ">
 
+</div>
     <div id="result"></div>
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 {% load static %}

@@ -145,11 +145,13 @@
             float: right; /* 우측 정렬 */
             margin-left: 10px; /* 글자와의 간격 */
         }
+
     </style>
 </head>
 <body>
 
 <div class="search-container">
+
     <div class="input-group">
         <input type="text" id="startLocation" placeholder="출발지를 입력해보세요" readonly>
 <!--        <button id="nextPageBtn" disabled>도착지 입력</button>-->
@@ -168,7 +170,29 @@
          style="cursor:pointer; position:absolute; right:-3px; top:-3px;"
          onclick="closeDaumPostcode()" alt="닫기 버튼">
 </div>
+<!-- Circular button in the bottom-right corner -->
+<div id="redirectButton"
+     onclick="window.location.href='edit_map';"
+     style="
+         position: fixed;
+         bottom: 20px;
+         right: 20px;
+         width: 40px;
+         height: 40px;
+         background-color: skyblue;
+         color: white;
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         cursor: pointer;
+         font-size: 24px;
+         font-weight: bold;
+         line-height: 1;
+         z-index: 1000;
+     ">
 
+</div>
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268&libraries=services"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" async defer></script>
 <script>
