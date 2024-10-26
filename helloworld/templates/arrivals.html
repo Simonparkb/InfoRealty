@@ -3,157 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리포트보기</title>
-    <style>
+    <title>관심 있는 동네를 입력해보세요!</title>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #1e1e1e; /* 다크 모드 배경 */
+        color: #e0e0e0; /* 밝은 텍스트 색상 */
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        height: 100vh;
+        margin: 0;
+        padding: 0 20px;
+    }
+
+    .search-container {
+        width: 100%;
+        max-width: 700px;
+        background-color: #2b2b2b; /* 다크 모드 카드 배경 */
+        padding: 15px 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 어두운 그림자 */
+        border-radius: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: 40px;
+    }
+
+    #nearestStation {
+        width: 100%;
+        max-width: 700px;
+        background-color: #2b2b2b;
+    }
+
+    @media (max-width: 768px) {
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 0 20px; /* 기본 좌우 여백 */
+            padding: 0 15px;
         }
 
         .search-container {
-            width: 100%;
-            max-width: 600px;
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
+            padding: 15px 20px;
         }
+    }
 
-        /* 검색창과 결과 목록의 동일한 폭을 맞추기 위해 추가 */
-        #nearestStation {
-            width: 100%; /* 검색창과 같은 너비 */
-            max-width: 600px; /* 최대 너비 설정 */
-            background-color: white;
-        }
+    .input-group {
+        display: flex;
+        width: calc(100% - 30px);
+        gap: 10px;
+        align-items: center;
+        border-radius: 50px;
+        padding: 10px 0px; /* 배경 제거 */
+    }
 
-        /* Mobile specific styles */
-        @media (max-width: 768px) {
-            body {
-                padding: 0 15px; /* 모바일에서 좌우 여백 추가 */
-            }
+    input[type="text"], button {
+        padding: 10px;
+        font-size: 1rem;
+        border-radius: 50px;
+    }
 
-            .search-container {
-                padding: 20px;
-            }
-        }
-        .input-group {
-            display: flex;
-            width: 100%;
-            gap: 10px;
-            align-items: center;
-        }
-        input[type="text"], button {
-            padding: 15px;
-            font-size: 1rem;
-            border-radius: 4px;
-        }
-        input[type="text"] {
-            flex: 1;
-            border: 1px solid #ddd;
-            transition: border-color 0.3s;
-        }
-        input[type="text"]:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
-        button {
-            background-color: black;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: black;
-        }
-        #layer {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            background-color: white;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
-            -webkit-overflow-scrolling: touch;
-            transition: opacity 0.3s ease;
-        }
-        #layer.open {
-            display: block;
-            opacity: 1;
-        }
-        #layer img {
-            cursor: pointer;
-            position: absolute;
-            right: -3px;
-            top: -3px;
-            z-index: 1;
-        }
-        #result, #nearestStation {
-            margin-top: 10px;
-            font-size: 1.1rem;
-            color: #333;
-            display: none;
-        }
-        body.fixed-position {
-            position: fixed;
-            width: 100%;
-            overflow: hidden;
-        }
-        /* 역 목록의 hover 시 스타일 */
-        .station-item {
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-        }
+    input[type="text"] {
+        flex: 1;
+        border: none;
+        background-color: transparent; /* 배경 투명 */
+        color: #e0e0e0; /* 밝은 텍스트 색상 */
+        outline: none;
+        font-size: 1rem;
+    }
 
-        .station-item:hover {
-            background-color: #f0f0f0;
-        }
-        /* AS IS 라벨 스타일 */
-        .asis-label {
-            display: inline-block;
-            background-color: green; /* 녹색 배경 */
-            color: white; /* 글자 색상 */
-            font-size: 0.8rem; /* 글자 크기 */
-            font-weight: bold;
-            padding: 2px 8px; /* 내부 여백 */
-            border-radius: 12px; /* 타원형을 위한 둥근 테두리 */
-            line-height: 1; /* 텍스트 세로 정렬을 위한 줄 간격 */
-            float: right; /* 우측 정렬 */
-            margin-left: 10px; /* 글자와의 간격 */
-        }
+    input[type="text"]::placeholder {
+        color: #888; /* 다크 모드에서 플레이스홀더 색상 */
+    }
 
-        /* TO BE 라벨 스타일 */
-        .tobe-label {
-            display: inline-block;
-            background-color: orange; /* TO BE 라벨 - 주황색 */
-            color: white;
-            font-size: 0.8rem; /* 글자 크기 */
-            font-weight: bold;
-            padding: 2px 8px; /* 내부 여백 */
-            border-radius: 12px; /* 타원형을 위한 둥근 테두리 */
-            line-height: 1; /* 텍스트 세로 정렬을 위한 줄 간격 */
-            float: right; /* 우측 정렬 */
-            margin-left: 10px; /* 글자와의 간격 */
-        }
-    </style>
+    button {
+        background-color: #444; /* 다크 모드 버튼 색상 */
+        color: #e0e0e0;
+        border: none;
+        cursor: pointer;
+        padding: 0 20px;
+        transition: background-color 0.3s;
+        border-radius: 50px;
+    }
+
+    button:hover {
+        background-color: #555;
+    }
+
+    #layer {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        background-color: #2b2b2b;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        -webkit-overflow-scrolling: touch;
+        transition: opacity 0.3s ease;
+    }
+
+    #layer.open {
+        display: block;
+        opacity: 1;
+    }
+
+    #layer img {
+        cursor: pointer;
+
+        position: absolute;
+        right: 10px; /* 오른쪽 여백 */
+        top: 40px; /* 상단에서 40px 아래로 여백 추가 */
+        z-index: 1;
+    }
+
+    #layer img:hover {
+        transform: scale(1.1); /* 버튼 호버 시 확대 */
+    }
+
+   #result, #nearestStation {
+        margin-top: 10px;
+        font-size: 1.1rem;
+        color: #e0e0e0; /* 다크 모드 텍스트 색상 */
+        background-color: transparent; /* 배경 투명 */
+        display: none;
+    }
+
+    body.fixed-position {
+        position: fixed;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .station-item {
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .station-item:hover {
+        background-color: #3a3a3a;
+    }
+
+    .asis-label {
+        display: inline-block;
+        background-color: #4caf50;
+        color: #1e1e1e;
+        font-size: 0.8rem;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 12px;
+        line-height: 1;
+        float: right;
+        margin-left: 10px;
+    }
+
+    .tobe-label {
+        display: inline-block;
+        background-color: #ff9800;
+        color: #1e1e1e;
+        font-size: 0.8rem;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 12px;
+        line-height: 1;
+        float: right;
+        margin-left: 10px;
+    }
+
+</style>
 </head>
 <body>
 
 <div class="search-container">
+
     <div class="input-group">
         <input type="text" id="startLocation" placeholder="도착지를 입력해보세요" readonly>
-<!--        <button id="nextPageBtn" disabled>경로확인</button>-->
+<!--        <button id="nextPageBtn" disabled>도착지 입력</button>-->
     </div>
+
     <!-- 위도, 경도 표시 영역 -->
     <div id="result"></div>
 
@@ -218,6 +243,7 @@
                     if (status === kakao.maps.services.Status.OK) {
                         var lat = parseFloat(result[0].y);
                         var lng = parseFloat(result[0].x);
+
                         // 위도, 경도를 텍스트로 표시
 <!--                        resultDiv.innerHTML = `<p>위도: ${lat} <br> 경도: ${lng}</p>`;-->
 <!--                        resultDiv.style.display = 'block';-->
@@ -226,7 +252,7 @@
                         findNearestStation(lat, lng);
                         nextPageBtn.disabled = false;
                     } else {
-                        resultDiv.innerHTML = '<p>주소를 찾을 수 없습니다.</p>';
+<!--                        resultDiv.innerHTML = '<p>주소를 찾을 수 없습니다.</p>';-->
                         resultDiv.style.display = 'block';
                     }
                 });
@@ -241,11 +267,13 @@
             height: '100%'  // 전체 높이
         }).embed(element_layer);
 
-        // 레이어를 화면 전체에 맞추기
-        element_layer.style.width = '100vw';  // 전체 화면 너비
-        element_layer.style.height = '100vh'; // 전체 화면 높이
-        element_layer.style.left = '0';       // 화면 왼쪽에 맞춤
-        element_layer.style.top = '0';        // 화면 상단에 맞춤
+        // 팝업 레이어를 하단 중앙에 맞추기
+        element_layer.style.width = '90vw';       // 너비를 뷰포트의 90%
+        element_layer.style.height = '40vh';      // 높이를 뷰포트의 40%로 설정
+        element_layer.style.left = '50%';         // 좌측 위치 중앙으로 설정
+        element_layer.style.top = 'auto';         // 상단으로부터 위치 설정 제거
+        element_layer.style.bottom = '5vh';       // 화면 하단으로부터 5vh 간격 유지
+        element_layer.style.transform = 'translateX(-50%)'; // 가로 중앙 정렬
 
         element_layer.classList.add('open');
     }
