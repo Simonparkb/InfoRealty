@@ -44,7 +44,8 @@ line_travel_times = {
     '7': 2.5,  # 7호선: 2.5분
     '8': 2.6,  # 8호선: 2.6분
     '9': 2.7,  # 9호선: 2.7분
-    'Sinbundang': 1.5  # 신분당선: 1.5분
+    'Sinbundang': 1.5,  # 신분당선: 1.5분
+    'Suinbundang': 1.5  # 신분당선: 1.5분
 }
 # 환승 시간을 정의
 transfer_time = 5.0  # 환승 시간 5분
@@ -379,9 +380,8 @@ def add_new_line(request):
             if Station.objects.filter(line=line).exists():
                 return JsonResponse({'message': '이미 존재하는 노선입니다. 다른 라인을 입력하세요.'}, status=400)
 
-            # sort_order의 가장 높은 값에 1을 추가하여 새로운 순서 설정
-            max_sort_order = Station.objects.aggregate(Max('sort_order'))['sort_order__max'] or 0
-            new_sort_order = max_sort_order + 1
+            # 신규 라인일 경우 sort_order를 1로 설정
+            new_sort_order = 1
 
             # 새로운 역을 Station 모델에 추가
             new_station = Station.objects.create(
@@ -396,6 +396,38 @@ def add_new_line(request):
         except Exception as e:
             return JsonResponse({'message': '신규 라인 추가 중 오류 발생: ' + str(e)}, status=400)
     return JsonResponse({'message': '허용되지 않은 메서드입니다.'}, status=405)
+
+# @csrf_exempt
+# def add_new_line(request):
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body)
+#             name = data.get('name')
+#             line = data.get('line')
+#             latitude = data.get('latitude')
+#             longitude = data.get('longitude')
+#
+#             # 동일한 line이 이미 존재하는지 확인
+#             if Station.objects.filter(line=line).exists():
+#                 return JsonResponse({'message': '이미 존재하는 노선입니다. 다른 라인을 입력하세요.'}, status=400)
+#
+#             # sort_order의 가장 높은 값에 1을 추가하여 새로운 순서 설정
+#             max_sort_order = Station.objects.aggregate(Max('sort_order'))['sort_order__max'] or 0
+#             new_sort_order = max_sort_order + 1
+#
+#             # 새로운 역을 Station 모델에 추가
+#             new_station = Station.objects.create(
+#                 name=name,
+#                 line=line,
+#                 latitude=latitude,
+#                 longitude=longitude,
+#                 sort_order=new_sort_order
+#             )
+#
+#             return JsonResponse({'message': '신규 라인이 성공적으로 추가되었습니다.', 'station_id': new_station.id}, status=201)
+#         except Exception as e:
+#             return JsonResponse({'message': '신규 라인 추가 중 오류 발생: ' + str(e)}, status=400)
+#     return JsonResponse({'message': '허용되지 않은 메서드입니다.'}, status=405)
 
 @csrf_exempt
 def add_station(request):
