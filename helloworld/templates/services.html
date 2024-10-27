@@ -90,8 +90,54 @@
             border-radius: 5px;
             box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
         }
+/* Start (modern gradient blue) bubble */
+.start-bubble {
+    background: linear-gradient(135deg, #4f93f9, #1f78d1);
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    font-size: 1.2rem; /* Increase font size */
+}
+
+/* End (modern gradient coral) bubble */
+.end-bubble {
+    background: linear-gradient(135deg, #ff7e5f, #fc5c9c);
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    font-size: 1.2rem; /* Increase font size */
+}
 
 
+/* Special connector with three consecutive dots */
+.special-connector {
+    width: 50px;
+    height: 10px;
+    background-color: transparent;
+    margin: 0 5px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+/* Dots inside the special connector */
+.special-connector::before,
+.special-connector::after,
+.special-connector .dot {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: skyblue;
+    border-radius: 50%;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
         /* Label styling */
         .asis-label, .tobe-label {
             display: inline-block;
@@ -116,15 +162,14 @@
 
         /* Detail button */
         .detail-button {
+              display: inline-block;
             background-color: #444;
-            color: #e0e0e0;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 16px;
+            color: #1e1e1e;
             font-size: 0.8rem;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background-color 0.3s ease;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
         }
 
         .detail-button:hover {
@@ -244,7 +289,18 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                 updateSummaryBox(asIsTime, toBeTime);
             }
 
-            let routeInfo = routeResult.route.map((station, index) => {
+            // Add a blue starting bubble and a special connector with four dots
+            let routeInfo = `
+                <span class="station-info start-bubble">
+                    <strong>출발</strong>
+                </span>
+                <span class="special-connector">
+                    <span class="dot"></span>
+                </span>
+            `;
+
+
+            routeInfo += routeResult.route.map((station, index) => {
                 // Generate the station bubble
                 let stationBubble = `
                     <span class="station-info ${station.transfer ? 'transfer' : ''}">
@@ -252,13 +308,24 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                     </span>
                 `;
 
-                // Add a connector after each station, except the last one
+                // Add a standard connector after each station, except the last one
                 if (index < routeResult.route.length - 1) {
                     stationBubble += `<span class="connector"></span>`;
                 }
 
                 return stationBubble;
             }).join('');
+
+
+            // Add a special connector and a red ending bubble
+            routeInfo += `
+                <span class="special-connector">
+                    <span class="dot"></span>
+                </span>
+                <span class="station-info end-bubble">
+                    <strong>도착</strong>
+                </span>
+            `;
 
             // Wrap all in a container
             const routeContainer = `
@@ -280,7 +347,6 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
             card.innerHTML = `
                 <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}<button class="detail-button">자세히 보기</button></h3>
                 ${routeContainer}
-
             `;
 
             card.querySelector('.detail-button').addEventListener('click', function() {
