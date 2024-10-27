@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     # "43.202.40.102",
     "ec2-43-202-40-102.ap-northeast-2.compute.amazonaws.com",
+    "goodveer.info"
 
 ]
 
