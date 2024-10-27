@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관심 있는 동네를 입력해보세요!</title>
+    <title>우리동네 이렇게 바뀌었어요</title>
 <style>
-    body {
-        font-family: 'Roboto', sans-serif;
-        background-color: #1e1e1e; /* 다크 모드 배경 */
-        color: #e0e0e0; /* 밝은 텍스트 색상 */
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        height: 100vh;
-        margin: 0;
-        padding: 0 20px;
-    }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e; /* Dark mode background */
+            color: #e0e0e0; /* Light text color */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
 
     .search-container {
         width: 100%;
-        max-width: 700px;
+        max-width: 600px;
         background-color: #2b2b2b; /* 다크 모드 카드 배경 */
         padding: 15px 20px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 어두운 그림자 */
@@ -28,7 +30,7 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
-        margin-top: 40px;
+        margin-top: 10%;
     }
 
     #nearestStation {
@@ -187,7 +189,29 @@
         float: right;
         margin-left: 10px;
     }
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            max-width: 600px;
+            justify-content: center;
+        }
 
+        .button-item {
+            padding: 8px 15px;
+            background-color: #444;
+            color: #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .button-item:hover {
+            background-color: #555;
+        }
 </style>
         <link rel="stylesheet" href="styles.min.css">
 </head>
@@ -196,7 +220,7 @@
 <div class="search-container">
 
     <div class="input-group">
-        <input type="text" id="startLocation" placeholder="출발지를 입력해보세요" readonly>
+        <input type="text" id="startLocation" placeholder="우리 동네를 입력해보세요" readonly>
 <!--        <button id="nextPageBtn" disabled>도착지 입력</button>-->
     </div>
 
@@ -207,11 +231,12 @@
     <div id="nearestStation"></div>
 </div>
 
+
 <!-- 우편번호 찾기 레이어 -->
 <div id="layer">
-    <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnCloseLayer"
-         style="cursor:pointer; position:absolute; right:-3px; top:-3px;"
-         onclick="closeDaumPostcode()" alt="닫기 버튼">
+<!--    <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnCloseLayer"-->
+<!--         style="cursor:pointer; position:absolute; right:-3px; top:-3px;"-->
+<!--         onclick="closeDaumPostcode()" alt="닫기 버튼">-->
 </div>
 <!-- Circular button in the bottom-right corner -->
 <div id="redirectButton"
@@ -246,63 +271,55 @@
     var nearestStationDiv = document.getElementById('nearestStation');
     var geocoder = new kakao.maps.services.Geocoder();
 
-
-
     function closeDaumPostcode() {
         document.body.classList.remove('fixed-position');
         element_layer.classList.remove('open');
     }
 
-    function execDaumPostcode() {
-        document.body.classList.add('fixed-position');
-        var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
 
-        new daum.Postcode({
-            oncomplete: function(data) {
-                var addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
-                startLocationInput.value = addr;
+function execDaumPostcode() {
+    document.body.classList.add('fixed-position');
+    var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
 
-                geocoder.addressSearch(addr, function(result, status) {
-                    if (status === kakao.maps.services.Status.OK) {
-                        var lat = parseFloat(result[0].y);
-                        var lng = parseFloat(result[0].x);
+    new daum.Postcode({
+        oncomplete: function(data) {
+            var addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+            startLocationInput.value = addr;
 
-                        // 위도, 경도를 텍스트로 표시
-<!--                        resultDiv.innerHTML = `<p>위도: ${lat} <br> 경도: ${lng}</p>`;-->
-<!--                        resultDiv.style.display = 'block';-->
+            geocoder.addressSearch(addr, function(result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    var lat = parseFloat(result[0].y);
+                    var lng = parseFloat(result[0].x);
 
-                        // 가까운 역 계산 함수 호출
-                        findNearestStation(lat, lng);
-                        nextPageBtn.disabled = false;
-                    } else {
-<!--                        resultDiv.innerHTML = '<p>주소를 찾을 수 없습니다.</p>';-->
-                        resultDiv.style.display = 'block';
-                    }
-                });
+                    // 가까운 역 계산 함수 호출
+                    findNearestStation(lat, lng);
+                    nextPageBtn.disabled = false;
+                } else {
+                    resultDiv.style.display = 'block';
+                }
+            });
 
-                closeDaumPostcode();
-                document.body.scrollTop = currentScroll;
-            },
-            onresize: function(size) {
-                element_layer.style.height = size.height + 'px';
-            },
-            width: '100%',  // 전체 너비
-            height: '100%'  // 전체 높이
-        }).embed(element_layer);
+            closeDaumPostcode();
+            document.body.scrollTop = currentScroll;
+        },
+        width: '100%',  // 전체 너비
+        height: '100%'  // 전체 높이
+    }).embed(element_layer);
 
-        // 팝업 레이어를 하단 중앙에 맞추기
-        element_layer.style.width = '90vw';       // 너비를 뷰포트의 90%
-        element_layer.style.height = '40vh';      // 높이를 뷰포트의 40%로 설정
-        element_layer.style.left = '50%';         // 좌측 위치 중앙으로 설정
-        element_layer.style.top = 'auto';         // 상단으로부터 위치 설정 제거
-        element_layer.style.bottom = '5vh';       // 화면 하단으로부터 5vh 간격 유지
-        element_layer.style.transform = 'translateX(-50%)'; // 가로 중앙 정렬
+    // 팝업 레이어의 고정된 크기 설정
+    element_layer.style.width = '90vw';       // 너비를 뷰포트의 90%
+    element_layer.style.height = '40vh';      // 높이를 뷰포트의 40%로 설정
+    element_layer.style.left = '50%';         // 좌측 위치 중앙으로 설정
+    element_layer.style.top = 'auto';         // 상단으로부터 위치 설정 제거
+    element_layer.style.bottom = '2vh';       // 화면 하단으로부터 2vh 간격 유지
+    element_layer.style.transform = 'translateX(-50%)'; // 가로 중앙 정렬
 
-        element_layer.classList.add('open');
-    }
+    element_layer.classList.add('open');
+}
+
 function findNearestStation(lat, lng) {
-        const asIsLines = ['1', '2', '3', '4', '5', '6', '7','8', '9']; // AS IS 노선
-        const toBeLines = ['Sinbundang','Suinbundang','경강선']; // TO BE 노선
+        const asIsLines = ['1', '2', '3', '4', '5', '6', '7','8', '9','경의중앙(서울역방면)','경의중앙','5(하남검단산방면)','5(마천방면)','1(광명역방면)','1(서동탄방면)','경강선']; // AS IS 노선
+        const toBeLines = ['Sinbundang','Suinbundang']; // TO BE 노선
 
         fetch('/find_nearest_stations/', {
             method: 'POST',
@@ -347,7 +364,7 @@ function findNearestStation(lat, lng) {
                         `;
                     });
                 } else {
-                    stationsInfo = '<p>반경 1km 내에 가까운 역을 찾을 수 없습니다.</p>';
+                    stationsInfo = '<p> 반경 1km 내에 가까운 역이 없습니다.</p>';
                 }
 
                 nearestStationDiv.innerHTML = stationsInfo;
@@ -410,7 +427,16 @@ function findNearestStation(lat, lng) {
 
 
 <!--    });-->
-
+    // 배경 클릭 시 closeDaumPostcode() 실행 (레이어가 열려 있을 때만)
+    document.body.addEventListener('click', function(event) {
+        // 레이어가 열려 있고, 클릭한 요소가 .search-container, #layer, #redirectButton이 아닌 경우에만 closeDaumPostcode 호출
+        if (element_layer.classList.contains('open') &&
+            !event.target.closest('.search-container') &&
+            !event.target.closest('#layer') &&
+            !event.target.closest('#redirectButton')) {
+            closeDaumPostcode();
+        }
+    });
 </script>
     <script src="script.min.js" defer></script>
 </body>

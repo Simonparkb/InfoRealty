@@ -5,218 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>리포트 보기</title>
     <style>
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #f5f5f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: auto;
-    margin: 0;
-}
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
 
-.info-container {
-    width: 90%;
-    max-width: 1200px;
-    background-color: white;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
+        .info-container {
+            width: 90%; /* Flexible width for responsiveness */
+            max-width: 1200px;
+            background-color: #2b2b2b;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            color: #e0e0e0;
+            box-sizing: border-box;
+        }
 
-.summary-box {
-    background-color: #f0f8ff;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    font-size: 1.1rem;
-    color: #333;
-    font-weight: bold;
-    border: 1px solid #d0e7ff;
-    margin-bottom: 20px;
-}
+        .summary-box {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #e0e0e0;
+            width: 100%;
+        }
 
-.summary-box span {
-    color: #007BFF; /* Emphasis color */
-    font-weight: bold;
-}
+        .route-info-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%; /* Full width of .info-container */
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
 
-/* Main content styles */
-.info-box {
-    flex: 1;
-    text-align: center;
-}
+        .route-info-container::-webkit-scrollbar {
+            height: 6px;
+        }
 
-.info-box h2 {
-    font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 10px;
-}
+        .route-info-container::-webkit-scrollbar-thumb {
+            background-color: #4ea8de;
+        }
 
-p {
-    font-size: 1rem;
-    color: #333;
-}
+        /* Station bubble */
+        .station-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 70px;
+            height: 70px;
+            background-color: white;
+            color: #1e1e1e;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 50%;
+            text-align: center;
+            padding: 5px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
 
-.route-info {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    gap: 0;
-}
-
-.station {
-    display: flex;
-    align-items: center;
-    position: relative;
-    padding-left: 25px; /* 원과 선을 위한 공간 */
-    margin-bottom: -10px; /* 역 사이의 간격 */
-    margin-top: -10px;
-}
-
-.circle {
-    width: 12px;
-    height: 12px;
-    background-color: #007BFF; /* 원 색상 */
-    border-radius: 50%;
-    position: relative;
-    z-index: 1;
-}
-
-.line {
-    position: relative;
-    width: 2px;
-    height: 50px; /* 선의 높이를 고정하여 각 역 사이에 일정한 간격으로 표시 */
-    background-color: #007BFF;
-    margin-left: 30px; /* 선이 원의 중심에 위치하도록 설정 */
-    z-index: 0;
-}
-
-.station-info {
-    font-size: 0.9rem;
-    color: #333;
-    margin-left: 15px; /* 원과 텍스트 사이의 간격 */
-    margin-bottom: 10px; /* 원과 텍스트 사이의 간격 */
-}
-
-.station-info.transfer {
-    color: blue;
-    font-weight: bold;
-}
-
-.station:first-child .line {
-    display: none; /* 첫 번째 역 위에는 선이 없도록 설정 */
-}
-
-.station:last-child .line {
-    display: none; /* 마지막 역 아래에도 선이 없도록 설정 */
-}
-.route-card {
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-left: 5px solid #4CAF50; /* 왼쪽 강조선 */
-    position: relative;
-    padding-bottom: 60px; /* 하단에 여유 공간 */
-    max-height: 300px; /* 카드의 최대 높이 설정 */
-    overflow-y: auto; /* 내용이 넘치면 스크롤 */
-
-}
-
-.route-card h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: black;
-    margin-bottom: 10px;
-}
-
-.route-card p {
-    margin: 5px 0;
-}
-
-.asis-label, .tobe-label {
-    display: inline-block;
-    background-color: green; /* AS IS label color */
-    color: white;
-    font-size: 0.8rem;
-    font-weight: bold;
-    padding: 2px 8px; /* Padding inside the label */
-    border-radius: 12px;
-    margin-left: 10px; /* Space between text and label */
-    line-height: 1;
-}
-
-.tobe-label {
-    background-color: orange; /* TO BE label color */
-}
-
-.label-container {
-    display: inline-block;
-    flex-direction: column;
-    gap: 5px;
-    margin-top: 10px;
-}
+        /* Connector between bubbles */
+        .connector {
+            width: 50px;
+            height: 10px;
+            background-color: skyblue;
+            margin: 0 5px;
+            flex-shrink: 0;
+            border-radius: 5px;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
 
 
-.detail-button {
-    background-color: #E0E0E0; /* 밝은 회색 배경 */
-    color: #333; /* 어두운 텍스트 색상 */
-    border: none;
-    padding: 6px 12px; /* 버튼 안의 여백 */
-    border-radius: 16px; /* 둥근 모서리 */
-    font-size: 0.8rem; /* 작은 글꼴 크기 */
-    cursor: pointer;
-    align-self: center; /* 버튼을 카드 내에서 중앙에 배치 */
-    margin-top: auto; /* 버튼을 카드 하단으로 이동 */
-    margin-bottom: 10px; /* 하단과 여유 공간 */
-    transition: background-color 0.3s ease; /* 부드러운 호버 효과 */
-}
+        /* Label styling */
+        .asis-label, .tobe-label {
+            display: inline-block;
+            background-color: #4caf50;
+            color: #1e1e1e;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+        }
 
-.detail-button:hover {
-    background-color: #BDBDBD; /* 호버 시 더 어두운 회색 */
-}
+        .tobe-label {
+            background-color: #ff9800;
+        }
 
-/* Responsive Styles for Small Screens */
-@media (max-width: 768px) {
-    body {
-        height: auto;
-        padding: 20px 0;
-    }
-    .info-container {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .info-box h2 {
-        font-size: 1rem;
-    }
-    p, .route-info span {
-        font-size: 0.8rem;
-    }
+        .label-container {
+            display: inline-flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
 
-    .station {
-        margin-bottom: -5px;
-        margin-left: 1px; /* 원과 텍스트 사이의 간격 */
-    }
+        /* Detail button */
+        .detail-button {
+            background-color: #444;
+            color: #e0e0e0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
 
-    .station-info {
-        font-size: 0.8rem;
-        margin-bottom: 1px; /* 원과 텍스트 사이의 간격 */
-    }
+        .detail-button:hover {
+            background-color: #555;
+        }
 
-    .circle {
-        width: 10px;
-        height: 10px;
-    }
+        /* Responsive Styles for Mobile */
+        @media (max-width: 768px) {
+            .info-container {
+                width: 100%; /* Full width for smaller screens */
+                padding: 15px; /* Padding reduced for mobile */
+            }
 
-    .line {
-        height: 50px;
-    }
-}
+            .route-info-container {
+                padding: 10px; /* Smaller padding for mobile */
+                gap: 5px; /* Smaller gap between elements */
+            }
+
+            .station-info {
+                width: 50px;
+                height: 50px;
+                font-size: 0.6rem;
+            }
+
+            .connector {
+                width: 30px;
+                height: 6px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -227,17 +164,16 @@ p {
     </div>
 
     <div class="info-box">
-        <div id="shortestRoute" class="route-info"></div> <!-- 경로 결과를 표시하는 영역 -->
+        <div id="shortestRoute" class="route-info"></div>
     </div>
 </div>
 
 <script>
-// 저장된 출발지 및 도착지 데이터 가져오기
 const departureData = JSON.parse(localStorage.getItem('departureData'));
 const destinationData = JSON.parse(localStorage.getItem('destinationData'));
 
-const asIsLines = ['1', '2', '3', '4', '5', '6', '7','8', '9']; // AS IS 노선
-const toBeLines = ['Sinbundang','Suinbundang','경강선']; // TO BE 노선
+const asIsLines = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '경의중앙(서울역방면)', '경의중앙', '5(하남검단산방면)', '5(마천방면)', '1(광명역방면)', '1(서동탄방면)', '경강선'];
+const toBeLines = ['Sinbundang', 'Suinbundang'];
 
 let asIsTime = null;
 let toBeTime = null;
@@ -258,19 +194,18 @@ if (departureData && destinationData) {
     const isDepartureInAsIsLines = asIsLines.includes(departureLine);
     const isDestinationInAsIsLines = asIsLines.includes(destinationLine);
 
-    // 요약 박스 업데이트
     updateSummaryBox(departureStation, departureLine, destinationStation, destinationLine, asIsTime, toBeTime);
 
     if (isDepartureInToBeLines || isDestinationInToBeLines) {
         fetchRouteSequentially(routeData, '최단 경로', asIsLines, 'TO BE');
     } else if (isDepartureInAsIsLines && isDestinationInAsIsLines) {
         fetchRouteSequentially(routeData, '최단 경로', toBeLines, 'AS IS')
-        .then(() => fetchRouteSequentially(routeData, '최단 경로', [], 'TO BE'));
+            .then(() => fetchRouteSequentially(routeData, '최단 경로', [], 'TO BE'));
     }
 } else {
     alert("출발지 또는 도착지 정보가 없습니다.");
 }
-// 요약 박스 업데이트 함수
+
 function updateSummaryBox(asIsTime, toBeTime) {
     let summaryText = '결과 요약: ';
 
@@ -284,7 +219,6 @@ function updateSummaryBox(asIsTime, toBeTime) {
     document.getElementById('summaryBox').innerText = summaryText;
 }
 
-// 경로 요청 후 요약 박스 업데이트
 async function fetchRouteSequentially(routeData, routeType, excludeLines, statusLabel) {
     try {
         const response = await fetch('/find_shortest_route/', {
@@ -295,69 +229,58 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
             },
             body: JSON.stringify({
                 ...routeData,
-                exclude_lines: excludeLines  // 제외할 노선 추가
+                exclude_lines: excludeLines
             })
         });
 
         const routeResult = await response.json();
 
-
         if (routeResult.route) {
-            // AS IS/TO BE에 따라 소요 시간을 각각 업데이트
             if (statusLabel === 'AS IS') {
                 asIsTime = routeResult.total_time.toFixed(0);
-                updateSummaryBox(asIsTime, toBeTime);  // 요약 박스에 AS IS 업데이트
+                updateSummaryBox(asIsTime, toBeTime);
             } else if (statusLabel === 'TO BE') {
                 toBeTime = routeResult.total_time.toFixed(0);
-                updateSummaryBox(asIsTime, toBeTime);  // 요약 박스에 TO BE 업데이트
+                updateSummaryBox(asIsTime, toBeTime);
             }
-            let routeInfo = '';
 
-            routeResult.route.forEach((station, stationIndex) => {
-                // 첫 번째 역
-                if (stationIndex === 0) {
-                    routeInfo += `
-                        <div class="station">
-                            <div class="circle"></div>
-                            <div class="station-info">
-                                <strong>${station.name} (${station.line}호선)</strong>
-                            </div>
-                        </div>`;
-                }
-                // 중간 역과 마지막 역
-                else {
-                    routeInfo += `
-                        <div class="line"></div> <!-- 이전 역과 연결하는 선 -->
-                        <div class="station">
-                            <div class="circle"></div>
-                            <div class="station-info ${station.transfer ? 'transfer' : ''}">
-                                <strong>${station.name} (${station.line}호선)</strong>
-                            </div>
-                        </div>`;
-                }
-            });
-            let labelHtml = '';
-            if (statusLabel === 'TO BE') {
-                labelHtml = `
-                    <div class="label-container">
-                        <span class="tobe-label">미래 노선</span>
-                    </div>
+            let routeInfo = routeResult.route.map((station, index) => {
+                // Generate the station bubble
+                let stationBubble = `
+                    <span class="station-info ${station.transfer ? 'transfer' : ''}">
+                        <strong>${station.name}</strong>
+                    </span>
                 `;
-            } else if (statusLabel === 'AS IS') {
-                labelHtml = `
-                    <div class="label-container">
-                        <span class="asis-label">현재 노선</span>
-                    </div>
-                `;
-            }
+
+                // Add a connector after each station, except the last one
+                if (index < routeResult.route.length - 1) {
+                    stationBubble += `<span class="connector"></span>`;
+                }
+
+                return stationBubble;
+            }).join('');
+
+            // Wrap all in a container
+            const routeContainer = `
+                <div class="route-info-container">
+                    ${routeInfo}
+                </div>
+            `;
+
+            let labelHtml = `
+                <div class="label-container">
+                    <span class="${statusLabel === 'TO BE' ? 'tobe-label' : 'asis-label'}">
+                        ${statusLabel === 'TO BE' ? '미래 노선' : '현재 노선'}
+                    </span>
+                </div>
+            `;
 
             const card = document.createElement('div');
             card.classList.add('route-card');
             card.innerHTML = `
-<!--                <h2>${routeData.startStation} -> ${routeData.endStation}</h2>-->
-                <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}</h3>
-                <br><p>${routeInfo}</p><br>
-                <button class="detail-button">자세히 보기</button>
+                <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}<button class="detail-button">자세히 보기</button></h3>
+                ${routeContainer}
+
             `;
 
             card.querySelector('.detail-button').addEventListener('click', function() {
@@ -373,7 +296,6 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
     }
 }
 
-// CSRF 토큰 가져오기 함수
 function getCSRFToken() {
     let csrfToken = null;
     const cookies = document.cookie.split(';');
