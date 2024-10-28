@@ -3,7 +3,7 @@ from . import views
 from .views import kakaomap, departures, arrivals, services,station_map,station_detail,add_station,delete_station,get_line_images
 
 urlpatterns = [
-    path('A', departures, name='departures'),
+    path('', departures, name='departures'),
     path('B/', arrivals, name='arrivals'),
     path('C/', services, name='services'),
     path('infoRealty/', kakaomap, name='kakaomap'),
