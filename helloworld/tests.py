@@ -740,3 +740,8 @@ print(f"CSV 파일이 생성되었습니다: {output_csv_path}")
 #
 #     # Pass the CSV data to the template
 #     return render(request, 'display_csv.html', {'stations': stations})
+
+# pip freeze > requirements.txt
+# python manage.py runserver
+# python manage.py makemigrations
+# python manage.py migrate

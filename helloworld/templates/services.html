@@ -252,7 +252,7 @@ if (departureData && destinationData) {
 }
 
 function updateSummaryBox(asIsTime, toBeTime) {
-    let summaryText = '결과 요약: ';
+    let summaryText = '';
 
     if (asIsTime !== null) {
         summaryText += `기존 경로에서는 약 ${asIsTime}분이 소요됩니다.`;

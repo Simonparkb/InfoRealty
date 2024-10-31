@@ -394,17 +394,7 @@ function findNearestStation(lat, lng) {
 
         }
     });
-<!--    nextPageBtn.addEventListener('click', function() {-->
-<!--        const departureData = {-->
-<!--            address: startLocationInput.value,-->
-<!--            nearestStation: nearestStationDiv.innerText-->
-<!--        };-->
 
-<!--        localStorage.setItem('departureData', JSON.stringify(departureData));-->
-<!--        window.location.href = 'arrivals';-->
-
-
-<!--    });-->
     // 배경 클릭 시 closeDaumPostcode() 실행 (레이어가 열려 있을 때만)
     document.body.addEventListener('click', function(event) {
         // 레이어가 열려 있고, 클릭한 요소가 .search-container, #layer, #redirectButton이 아닌 경우에만 closeDaumPostcode 호출
