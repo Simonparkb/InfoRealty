@@ -78,7 +78,7 @@
             bottom: 5px;
             left: 10px;
             right: 10px;
-            height: 50%;
+            height: 30%;
             padding: 5px;
             background: rgba(255, 255, 255, 1);
             z-index: 3;
@@ -399,52 +399,53 @@
         {% endfor %}
     ];
 
-
+    // 현재 열려 있는 InfoWindow를 추적할 변수
+    let currentInfoWindow = null;
     var markers = subwayData.map(function(station) {
-    var markerPosition = new kakao.maps.LatLng(station.latitude, station.longitude);
+        var markerPosition = new kakao.maps.LatLng(station.latitude, station.longitude);
 
-    var markerImage = null;
+        var markerImage = null;
 
-    // 마커 이미지 경로를 반환하는 함수
-    function getMarkerImageUrlByLine(line) {
-        // line이 숫자인 경우를 처리
-        if (!isNaN(line)) {
-            line = parseInt(line, 10);  // 숫자일 경우 정수로 변환
+        // 마커 이미지 경로를 반환하는 함수
+        function getMarkerImageUrlByLine(line) {
+            // line이 숫자인 경우를 처리
+            if (!isNaN(line)) {
+                line = parseInt(line, 10);  // 숫자일 경우 정수로 변환
+            }
+
+            switch(line) {
+                case 1: return "{% static 'image/Seoul_Metro_Line_1.png' %}";
+                case 2: return "{% static 'image/Seoul_Metro_Line_2.png' %}";
+                case 3: return "{% static 'image/Seoul_Metro_Line_3.png' %}";
+                case 4: return "{% static 'image/Seoul_Metro_Line_4.png' %}";
+                case 5: return "{% static 'image/Seoul_Metro_Line_5.png' %}";
+                case 6: return "{% static 'image/Seoul_Metro_Line_6.png' %}";
+                case 7: return "{% static 'image/Seoul_Metro_Line_7.png' %}";
+                case 8: return "{% static 'image/Seoul_Metro_Line_8.png' %}";
+                case 9: return "{% static 'image/Seoul_Metro_Line_9.png' %}";
+                case 'Shinbundang': return "{% static 'image/Shinbundang.png' %}";
+                case 'Suinbundang': return "{% static 'image/Suinbundang.png' %}";
+                default: return "{% static 'image/default_marker.png' %}";  // 기본 이미지
+            }
         }
 
-        switch(line) {
-            case 1: return "{% static 'image/Seoul_Metro_Line_1.png' %}";
-            case 2: return "{% static 'image/Seoul_Metro_Line_2.png' %}";
-            case 3: return "{% static 'image/Seoul_Metro_Line_3.png' %}";
-            case 4: return "{% static 'image/Seoul_Metro_Line_4.png' %}";
-            case 5: return "{% static 'image/Seoul_Metro_Line_5.png' %}";
-            case 6: return "{% static 'image/Seoul_Metro_Line_6.png' %}";
-            case 7: return "{% static 'image/Seoul_Metro_Line_7.png' %}";
-            case 8: return "{% static 'image/Seoul_Metro_Line_8.png' %}";
-            case 9: return "{% static 'image/Seoul_Metro_Line_9.png' %}";
-            case 'Shinbundang': return "{% static 'image/Shinbundang.png' %}";
-            case 'Suinbundang': return "{% static 'image/Suinbundang.png' %}";
-            default: return "{% static 'image/default_marker.png' %}";  // 기본 이미지
+        // 환승역일 경우 환승 마커 이미지 설정
+        if (station.transfer) {
+            markerImage = new kakao.maps.MarkerImage(
+                "{% static 'image/transfer.png' %}",  // 환승 마커 이미지 경로
+                new kakao.maps.Size(15, 15),
+                {offset: new kakao.maps.Point(15, 15)}
+            );
+
+        } else {
+            // line 값에 따라 다른 마커 이미지를 설정 (getMarkerImageUrlByLine 함수 사용)
+            var imageUrl = getMarkerImageUrlByLine(station.line);
+            markerImage = new kakao.maps.MarkerImage(
+                imageUrl,  // line에 따른 마커 이미지 경로
+                new kakao.maps.Size(20, 20),
+                {offset: new kakao.maps.Point(15, 15)}
+            );
         }
-    }
-
-    // 환승역일 경우 환승 마커 이미지 설정
-    if (station.transfer) {
-        markerImage = new kakao.maps.MarkerImage(
-            "{% static 'image/transfer.png' %}",  // 환승 마커 이미지 경로
-            new kakao.maps.Size(15, 15),
-            {offset: new kakao.maps.Point(15, 15)}
-        );
-
-    } else {
-        // line 값에 따라 다른 마커 이미지를 설정 (getMarkerImageUrlByLine 함수 사용)
-        var imageUrl = getMarkerImageUrlByLine(station.line);
-        markerImage = new kakao.maps.MarkerImage(
-            imageUrl,  // line에 따른 마커 이미지 경로
-            new kakao.maps.Size(20, 20),
-            {offset: new kakao.maps.Point(15, 15)}
-        );
-    }
 
 
         // 마커 생성
@@ -455,18 +456,42 @@
             zIndex: station.transfer ? 10 : 0
         });
 
-        // 정보창 생성
+        // 마커 클릭 시 나타나는 InfoWindow 설정
         var infowindow = new kakao.maps.InfoWindow({
-            content: `<div style="padding:5px;"> ${station.name} (${station.line}호선) </div>`
+            content: `
+                <div style="padding:5px; font-size:12px;">
+                    <strong>${station.name}</strong><br>
+                    노선: ${station.line}호선<br>
+                    위도: ${station.latitude.toFixed(4)}<br>
+                    경도: ${station.longitude.toFixed(4)}<br>
+                    환승역: ${station.transfer ? 'true' : 'false'}
+                </div>
+            `,
+            removable: true  // 닫기 버튼 추가
         });
-
-          // 마커 클릭 시 해당 역 정보를 result 영역에 표시
+        // 마커 클릭 시 InfoWindow를 표시하도록 이벤트 리스너 추가
         kakao.maps.event.addListener(marker, 'click', function() {
             fetchStationDetails(station.name, station.line);
-        });
+            // 다른 InfoWindow가 열려 있으면 닫기
+            if (currentInfoWindow) {
+                currentInfoWindow.close();
+            }
 
+            // 현재 InfoWindow 열기
+            infowindow.open(map, marker);
+            currentInfoWindow = infowindow; // 현재 열린 InfoWindow를 기록
+
+        });
         return marker;
     });
+<!--    // 지도 클릭 시 열린 InfoWindow 닫기-->
+<!--    kakao.maps.event.addListener(map, 'click', function() {-->
+<!--        if (currentInfoWindow) {-->
+<!--            currentInfoWindow.close();-->
+<!--            currentInfoWindow = null; // 열린 InfoWindow 기록 초기화-->
+<!--        }-->
+<!--    });-->
+
 
     markers.forEach(function(marker) {
         marker.setMap(map); // 마커를 지도에 직접 추가
@@ -502,6 +527,7 @@
                 console.error('역 정보를 가져오는 중 오류 발생:', error);
             });
     }
+
     // Reset input fields and displayed station info
     function resetInputFields() {
         document.getElementById('startLat').value = '';
