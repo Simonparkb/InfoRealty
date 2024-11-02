@@ -305,8 +305,8 @@ function execDaumPostcode() {
 }
 
     function findNearestStation(lat, lng) {
-        const asIsLines = ['1', '2', '3', '4', '5', '6', '7','8', '9','경의중앙(서울역방면)','경의중앙','5(하남검단산방면)','5(마천방면)','1(광명역방면)','1(서동탄방면)','경강선']; // AS IS 노선
-        const toBeLines = ['Sinbundang','Suinbundang']; // TO BE 노선
+       const asIsLines = ['1', '2', '3', '4', '5', '6', '7', '8', '9','경춘선','경의중앙','에버라인', '경강선','Shinbundang', 'Suinbundang'];
+       const toBeLines = []; // TO BE 노선
 
         fetch('/find_nearest_stations/', {
             method: 'POST',
@@ -345,7 +345,8 @@ function execDaumPostcode() {
 
                         stationsInfo += `
                             <p class="station-item" data-station="${stationInfo.station}" data-line="${line}" data-distance="${stationInfo.distance.toFixed(2)}" data-walk-time="${stationInfo.walk_time.toFixed(1)}" data-status="${status}">
-                                ${stationInfo.station} (${line}호선) ${label}, 거리: ${stationInfo.distance.toFixed(2)}m, 걷는 시간: 약 ${stationInfo.walk_time.toFixed(1)}분
+                                ${stationInfo.station} (${line}호선)
+<!--                                ${stationInfo.station} (${line}호선) ${label}, 거리: ${stationInfo.distance.toFixed(2)}m, 걷는 시간: 약 ${stationInfo.walk_time.toFixed(1)}분-->
                             </p>
                         `;
                     });

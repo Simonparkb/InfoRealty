@@ -83,6 +83,7 @@
     .station-info span.value {
         color: #555;
         font-weight: bold;
+        font-size: 1.2em;
     }
 
 
@@ -143,7 +144,7 @@
         .popup-close {
             cursor: pointer;
             font-weight: bold;
-            font-size: 1.2em;
+            font-size: 15px;
         }
 
         /* 스크롤바 숨기기 */
@@ -185,18 +186,51 @@
         .delete-btn:hover {
             background-color: #ff0000;  /* 버튼 호버 효과 */
         }
-    .map_wrap {position:relative;width:100%;height:500px;}
-    #menu_wrap {position:absolute;top:0;left:0;bottom:0;width:100px;height:250px;margin:10px 0 30px 10px;padding:5px;overflow-y:auto;background:rgba(255, 255, 255, 1);z-index: 1;border-radius: 10px;}
+    .map_wrap {
+        position: relative;
+        width: 100%;
+        height: 500px;
+    }
+    #menu_wrap {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 100px;
+        height: 170px;
+        padding: 5px;
+        overflow-y: auto;
+        background: rgba(255, 255, 255, 1);
+        z-index: 1;
+        border-radius: 10px;
+    }
+    #map_wrap_bottom {
+        position: fixed; /* 화면 하단에 고정 */
+        bottom: 20px; /* 원하는 만큼 하단에 위치 */
+        left: 0;
+        width: 100%;
+        height: 150px;
+        padding: 5px;
+        background: rgba(255, 255, 255, 1);
+        z-index: 1;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
     .map_options label, .map_routes label {
         display: block;
         margin: 5px 0;
-        font-size: 10px; /* Reducing font size for options */
+        font-size: 10px;
+    }
+    .map_options_bottom label {
+        margin: 0 5px; /* 가로 메뉴 간 간격 추가 */
+        font-size: 15px;
     }
     </style>
 </head>
 <body>
     <div class="map_wrap">
-        <div id="map" style="width:100%;height:100%;"></div>
+        <div id="map" style="width:100%;height:200%;"></div>
         <div id="menu_wrap">
             <div class="map_options">
                 <p><label>지도 정보:</label></p>
@@ -206,56 +240,55 @@
                 <label><input type="checkbox" id="chkUseROADVIEW" onclick="setOverlayMapTypeId()" /> 로드뷰</label>
                 <label><input type="checkbox" id="chkBicycle" onclick="setOverlayMapTypeId()" /> 자전거도로</label>
             </div>
-            <div class="map_routes">
-                <p><label>노선 선택:</label></p>
-                <label><input type="checkbox" id="excludeLine1" value="1" checked> AS IS</label>
-                <label><input type="checkbox" id="excludeLine2" value="2" checked> TO BE</label>
+        </div>
+        <div id="map_wrap_bottom">
+            <div class="map_options_bottom">
+                <div id="result"></div>
+                <div class="coordinates-input">
+                    <label for="startLat">lat:</label>
+                    <input type="text" id="startLat" readonly>
+
+                    <label for="startLng">long:</label>
+                    <input type="text" id="startLng" readonly>
+
+                    <input type="text" id="startLatLng" readonly placeholder="선택 위치 정보" style="display: none;">
+
+                    <button id="startAddressBtn">찾기</button>
+
+                    <label for="name">역명:</label>
+                    <input type="text" id="name">
+
+                    <label for="line">노선:</label>
+                    <input type="text" id="line">
+
+                    <button id="resetButton">초기화</button>
+
+                    <!-- This will show a message if the user doesn't select a position or line -->
+                    <p id="lineInfoMessage" style="display:none; color: red;">기준 역을 선택해주세요!</p>
+                    <br>
+                    <select id="position">
+                        <option value="before">전역에 추가</option>
+                        <option value="after">다음역에 추가</option>
+                    </select>
+                        <button id="addStationButton">역 추가</button>
+                        <button id="deleteStationButton">역 삭제</button>
+
+                        <button id="showImagesButton">노선 정보</button>
+                        <button id="addNewLineButton">신규 노선 추가</button>
+                        <div class="overlay" id="overlay"></div>
+                        <div class="popup" id="imagePopup">
+                            <div class="popup-header">
+                                <span>노선 이미지</span>
+                                <span class="popup-close" id="closePopup">&times;</span>
+                            </div>
+                            <div id="imageList"></div>
+                        </div>
+                </div>
+
             </div>
         </div>
     </div>
 
-<div class="coordinates-input">
-    <label for="startLat">위도:</label>
-    <input type="text" id="startLat" readonly>
-
-    <label for="startLng">경도:</label>
-    <input type="text" id="startLng" readonly>
-
-    <input type="text" id="startLatLng" readonly placeholder="선택 위치 정보" style="display: none;">
-
-    <button id="startAddressBtn">찾기</button>
-
-    <label for="name">역명:</label>
-    <input type="text" id="name">
-
-    <label for="line">노선:</label>
-    <input type="text" id="line">
-
-    <button id="resetButton">초기화</button>
-
-    <!-- This will show a message if the user doesn't select a position or line -->
-    <p id="lineInfoMessage" style="display:none; color: red;">기준 역을 선택해주세요!</p>
-    <br>
-    <select id="position">
-        <option value="before">전역에 추가</option>
-        <option value="after">다음역에 추가</option>
-    </select>
-        <button id="addStationButton">역 추가</button>
-        <button id="deleteStationButton">역 삭제</button>
-
-        <button id="showImagesButton">노선 정보</button>
-        <button id="addNewLineButton">신규 노선 추가</button>
-        <div class="overlay" id="overlay"></div>
-        <div class="popup" id="imagePopup">
-            <div class="popup-header">
-                <span>노선 이미지</span>
-                <span class="popup-close" id="closePopup">&times;</span>
-            </div>
-            <div id="imageList"></div>
-        </div>
-</div>
-<!-- Circular button in the bottom-right corner -->
-    <div id="result"></div>
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 {% load static %}
     <script>
@@ -643,7 +676,6 @@
             alert("역이 삭제되었습니다.");
             resetInputFields()
             console.log(data);
-
             location.reload();  // 페이지 새로고침
 
             // Optionally, reset the form or reload the station list
@@ -658,13 +690,12 @@
     function displayStationInfo(station) {
         const resultDiv = document.getElementById('result');
         resultDiv.innerHTML = `
-            <strong>선택한 역 기준으로 기존 역을 추가합니다:</strong>
-            <br>
-            <span>이름: <span class="value">${station.name}</span></span> |
-            <span>노선: <span class="value">${station.line}</span></span> |
-            <span>위도: <span class="value">${station.latitude.toFixed(4)}</span></span> |
-            <span>경도: <span class="value">${station.longitude.toFixed(4)}</span></span> |
-            <span>순서: <span class="value">${station.sort_order}</span></span>
+            <strong>기준 역 정보: </strong>
+            <span>name: <span class="value">${station.name}</span></span> |
+            <span>line: <span class="value">${station.line}</span></span> |
+            <span>lat: <span class="value">${station.latitude.toFixed(4)}</span></span> |
+            <span>long: <span class="value">${station.longitude.toFixed(4)}</span></span> |
+            <span>order: <span class="value">${station.sort_order}</span></span>
         `;
     }
 

@@ -51,28 +51,6 @@ line_travel_times = {
 transfer_time = 5.0  # 환승 시간 5분
 
 
-def departures(request):
-    return render(request, 'departures.html')
-
-def arrivals(request):
-    return render(request, 'arrivals.html')
-
-def services(request):
-    return render(request, 'services.html')
-
-def log_activity(user, action):
-    ActivityLog.objects.create(user=user, action=action)
-
-
-def kakaomap(request):
-    return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
-
-def station_map(request):
-    stations = Station.objects.all()  # 모든 역 데이터 가져오기
-    return render(request, 'kakao.html', {
-        'stations': stations  # 템플릿에 역 정보 전달
-    })
-
 # Helper function to load stations from the database
 def load_stations_from_csv():
     global stations_cache
@@ -96,8 +74,8 @@ def load_stations_from_csv():
             is_transfer = len(station_list) > 1
             for station in station_list:
                 station['transfer'] = is_transfer  # 환승 여부를 계산
+
             stations.extend(station_list)
-        print(stations)
         # Cache the results
         stations_cache = stations
     return stations_cache
@@ -150,12 +128,39 @@ def create_optimized_graph():
 
             # Cache the generated graph
             graph_cache = G
-
         except Exception as e:
             print(f"An error occurred while creating the graph: {e}")
             return None
 
     return graph_cache
+
+
+
+
+
+
+
+
+
+
+def station_map(request):
+    stations = Station.objects.all()  # 모든 역 데이터 가져오기
+    return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
+
+
+def departures(request):
+    return render(request, 'departures.html')
+
+def arrivals(request):
+    return render(request, 'arrivals.html')
+
+def services(request):
+    return render(request, 'services.html')
+
+
+
+def log_activity(user, action):
+    ActivityLog.objects.create(user=user, action=action)
 
 
 
@@ -524,6 +529,7 @@ def delete_station(request, station_name, station_line):
 #             return JsonResponse({'status': 'error', 'message': 'Station not found'}, status=404)
 #
 #     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
 def station_detail(request, station_name, station_line):
     print(f"요청된 역 이름: {station_name}, 요청된 노선: {station_line}")  # 디버깅용 출력
 
@@ -572,3 +578,10 @@ def display_csv(request):
 
     # Pass the CSV data to the template
     return render(request, 'display_csv.html', {'stations': stations})
+
+
+
+
+def kakaomap(request):
+    return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
+
