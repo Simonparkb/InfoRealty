@@ -6,214 +6,156 @@
     <title>Map</title>
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268&libraries=services"></script>
  <style>
-    /* 지도 스타일 */
-    #map {
-        width: 100%;
-        height: 500px; /* PC에서는 더 큰 높이 */
-    }
+        /* HTML, body 설정 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
 
-    /* 입력 폼 컨테이너 가로 정렬 */
-    .coordinates-input {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 15px;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-    }
+        /* 지도 스타일 */
+        #map {
+            width: 100%;
+            height: 100%;
+        }
 
-    /* 입력 필드 스타일 */
-    .coordinates-input input,
-    .coordinates-input select {
-        width: 120px;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
+        .map_wrap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
 
-    /* 버튼 스타일 */
-    .coordinates-input button {
-        padding: 8px 8px;
-        font-size: 0.5em;
-        background-color: skyblue;
-        color: black;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
+        /* 메뉴 스타일 */
+        #menu_wrap {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 150px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
 
-    .coordinates-input button:hover {
-        background-color: DeepSkyBlue;
-    }
+        .map_options label {
+            display: block;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        /* + 버튼 스타일 */
+        #toggle_button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.1s, transform 0.1s;
+            z-index: 2;
+        }
 
-    /* 결과 영역 스타일 */
-    #result {
-        margin-top: 20px;
-        font-size: 1.2em;
-        width: 100%;
-    }
-    /* 결과 표시 스타일 */
-    .station-info {
-        margin-top: 15px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        font-size: 0.95em;
-        color: #333;
-        line-height: 1.6;
-    }
+        /* 클릭 시 배경색과 크기 조절 */
+        #toggle_button:active {
+            background-color: #0056b3;
+            transform: scale(0.95);
+        }
 
-    /* 강조 텍스트 스타일 */
-    .station-info strong {
-        font-size: 1em;
-        color: #4CAF50;
-        font-weight: 600;
-    }
+        /* 하단 메뉴 스타일 */
+        #map_wrap_bottom {
+            position: fixed;
+            bottom: 5px;
+            left: 10px;
+            right: 10px;
+            height: 50%;
+            padding: 5px;
+            background: rgba(255, 255, 255, 1);
+            z-index: 3;
+            border-radius: 10px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.1s ease;
+        }
 
-    /* 속성 구분자 스타일 */
-    .station-info span {
-        display: inline-block;
-        margin-right: 10px;
-    }
+        /* 닫기 버튼 스타일 */
+        #close_button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #007bff;
+            transition: color 0.1s;
+        }
 
-    /* 속성 값 스타일 */
-    .station-info span.value {
-        color: #555;
-        font-weight: bold;
-        font-size: 1.2em;
-    }
+        #close_button:hover {
+            color: #0056b3;
+        }
+        .map_options label, .map_routes label {
+            display: block;
+            margin: 5px 0;
+            font-size: 0.8em;
+        }
 
+        /* 입력 폼 컨테이너 가로 정렬 */
+        .coordinates-input {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+        }
 
-    /* 오버레이 스타일 */
-    .overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-    }
+        /* 입력 필드 스타일 */
+        .coordinates-input input,
+        .coordinates-input select {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-    /* 팝업 스타일 */
-    .popup {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100px;
-        max-width: 500px;
-        background-color: white;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        border-radius: 8px;
-        padding: 20px;
-        z-index: 1000;
-        overflow-y: auto;
-        max-height: 50%;
-    }
+        /* 버튼 스타일 */
+        .coordinates-input button {
+            padding: 8px 8px;
+            font-size: 0.5em;
+            background-color: skyblue;
+            color: black;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-    .popup img {
-        width: 100%;
-        height: auto;
-        margin-bottom: 10px;
-        border-radius: 4px;
-        transition: transform 0.3s ease;
-        max-height: 50%;
-    }
+        .coordinates-input button:hover {
+            background-color: DeepSkyBlue;
+        }
 
-    /* 이미지 호버 효과 */
-    .popup img:hover {
-        transform: scale(1.05);
-    }
-
-    /* 팝업 헤더 */
-    .popup-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 1.2em;
-        margin-bottom: 10px;
-    }
-
-    /* 닫기 버튼 스타일 */
-    .popup-close {
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 10px;
-    }
-
-    /* 스크롤바 숨기기 */
-    .popup::-webkit-scrollbar {
-        display: none;
-    }
-
-
-    .delete-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #ff4d4d;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        cursor: pointer;
-        border-radius: 50%;  /* 원형 버튼 */
-        font-weight: bold;
-    }
-
-    .delete-btn:hover {
-        background-color: #ff0000;  /* 버튼 호버 효과 */
-    }
-    .map_wrap {
-        position: relative;
-        width: 100%;
-        height: 500px;
-    }
-    #menu_wrap {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        width: 100px;
-        height: 170px;
-        padding: 5px;
-        overflow-y: auto;
-        background: rgba(255, 255, 255, 1);
-        z-index: 1;
-        border-radius: 10px;
-    }
-    #map_wrap_bottom {
-        position: fixed; /* 화면 하단에 고정 */
-        bottom: 10px; /* 원하는 만큼 하단에 위치 */
-        left: 0;
-        width: 100%;
-        height: 150px;
-        padding: 0px;
-        background: rgba(255, 255, 255, 1);
-        z-index: 1;
-        border-radius: 10px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .map_options label, .map_routes label {
-        display: block;
-        margin: 5px 0;
-        font-size: 10px;
-    }
-    .map_options_bottom label {
-        margin: 0 5px; /* 가로 메뉴 간 간격 추가 */
-        font-size: 10px;
-    }
-    </style>
+        /* 결과 영역 스타일 */
+        #result {
+            margin: 10px;
+            font-size: 0.8em;
+            width: 100%;
+        }
+     </style>
 </head>
 <body>
     <div class="map_wrap">
-        <div id="map" style="width:100%;height:100%;"></div>
+        <div id="map"></div>
         <div id="menu_wrap">
             <div class="map_options">
                 <p><label>지도 정보:</label></p>
@@ -224,60 +166,66 @@
                 <label><input type="checkbox" id="chkBicycle" onclick="setOverlayMapTypeId()" /> 자전거도로</label>
             </div>
         </div>
+
         <div id="map_wrap_bottom">
-            <div class="map_options_bottom">
-                <div id="result"></div>
-                <div class="coordinates-input">
-                    <label for="startLat">lat:</label>
-                    <input type="text" id="startLat" readonly>
+            <div id="result"></div>
+            <div class="coordinates-input">
+                <label for="startLat">lat:</label>
+                <input type="text" id="startLat" readonly>
 
-                    <label for="startLng">long:</label>
-                    <input type="text" id="startLng" readonly>
+                <label for="startLng">long:</label>
+                <input type="text" id="startLng" readonly>
 
-                    <input type="text" id="startLatLng" readonly placeholder="선택 위치 정보" style="display: none;">
+                <input type="text" id="startLatLng" readonly placeholder="선택 위치 정보" style="display: none;">
 
-                    <button id="startAddressBtn">찾기</button>
+                <button id="startAddressBtn">찾기</button>
 
-                    <label for="name">역명:</label>
-                    <input type="text" id="name">
+                <label for="name">역명:</label>
+                <input type="text" id="name">
 
-                    <label for="line">노선:</label>
-                    <input type="text" id="line">
+                <label for="line">노선:</label>
+                <input type="text" id="line">
 
-                    <label for="isTransfer">환승 여부:</label>
-                    <input type="checkbox" id="isTransfer">
+                <label for="isTransfer">환승 여부:</label>
+                <input type="checkbox" id="isTransfer">
 
-                    <button id="resetButton">초기화</button>
+                <button id="resetButton">초기화</button>
 
-                    <!-- This will show a message if the user doesn't select a position or line -->
-                    <p id="lineInfoMessage" style="display:none; color: red;">기준 역을 선택해주세요!</p>
-                    <br>
-                    <select id="position">
-                        <option value="before">전역에 추가</option>
-                        <option value="after">다음역에 추가</option>
-                    </select>
-                        <button id="addStationButton">역 추가</button>
-                        <button id="deleteStationButton">역 삭제</button>
-                        <button id="updateStationButton">역 수정</button>
-                        <button id="showImagesButton">노선 정보</button>
-                        <button id="addNewLineButton">신규 노선 추가</button>
-                        <div class="overlay" id="overlay"></div>
-                        <div class="popup" id="imagePopup">
-                            <div class="popup-header">
-                                <span>노선 이미지</span>
-                                <span class="popup-close" id="closePopup">&times;</span>
-                            </div>
-                            <div id="imageList"></div>
-                        </div>
-                </div>
-
+                <p id="lineInfoMessage" style="display:none; color: red;">기준 역을 선택해주세요!</p>
+                <select id="position">
+                    <option value="before">전역에 추가</option>
+                    <option value="after">다음역에 추가</option>
+                </select>
+                <button id="addStationButton">역 추가</button>
+                <button id="deleteStationButton">역 삭제</button>
+                <button id="updateStationButton">역 수정</button>
+                <button id="showImagesButton">노선 정보</button>
+                <button id="addNewLineButton">신규 노선 추가</button>
             </div>
+            <div id="close_button">✕</div>
         </div>
     </div>
+    <div id="toggle_button">+</div>
 
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 {% load static %}
     <script>
+        const toggleButton = document.getElementById('toggle_button');
+        const mapWrapBottom = document.getElementById('map_wrap_bottom');
+        const closeButton = document.getElementById('close_button');
+
+        // 버튼 클릭 또는 터치 이벤트 핸들러
+        const toggleMenu = () => {
+            mapWrapBottom.style.display = mapWrapBottom.style.display === 'none' ? 'block' : 'none';
+        };
+
+        // 이벤트 리스너 추가 (클릭과 터치 반응)
+        toggleButton.addEventListener('click', toggleMenu);
+        toggleButton.addEventListener('touchstart', toggleMenu);
+        closeButton.addEventListener('click', () => {
+            mapWrapBottom.style.display = 'none';
+        });
+
     // 출발지 입력 필드에 포커스
     function focusStartField() {
         document.getElementById('startLatLng').focus();
@@ -754,45 +702,6 @@
         document.getElementById('isTransfer').checked = false;  // 환승 여부 초기화
         selectedStation = null;  // Clear the selected station
     });
-
-    // 팝업 및 오버레이 요소 가져오기
-    const showImagesButton = document.getElementById('showImagesButton');
-    const popup = document.getElementById('imagePopup');
-    const overlay = document.getElementById('overlay');
-    const closePopup = document.getElementById('closePopup');
-    const imageList = document.getElementById('imageList');
-
-    // 팝업 열기
-    showImagesButton.addEventListener('click', () => {
-        fetch('/get_line_images/')
-            .then(response => response.json())
-            .then(data => {
-                imageList.innerHTML = ''; // 기존 이미지 목록 초기화
-                data.images.forEach(image => {
-                    const imgElement = document.createElement('img');
-                    imgElement.src = image.url;
-                    imgElement.alt = image.name;
-                    imageList.appendChild(imgElement);
-                });
-                popup.style.display = 'block';
-                overlay.style.display = 'block';
-            })
-            .catch(error => {
-                console.error('이미지 로드 중 오류 발생:', error);
-            });
-    });
-
-    // 팝업 닫기
-    closePopup.addEventListener('click', () => {
-        popup.style.display = 'none';
-        overlay.style.display = 'none';
-    });
-
-    overlay.addEventListener('click', () => {
-        popup.style.display = 'none';
-        overlay.style.display = 'none';
-    });
-
 
 document.getElementById('addNewLineButton').addEventListener('click', function() {
     const name = document.getElementById('name').value;
