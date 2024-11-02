@@ -152,30 +152,42 @@
             display: none;
         }
 
-        /* 슬라이드 패널 스타일 */
-        #map_wrap_bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-            border-radius: 15px 15px 0 0;
-            transition: transform 0.3s ease;
-            transform: translateY(90%); /* 초기에는 패널을 숨김 */
+        /* 모바일 스타일 */
+        @media (max-width: 768px) {
+            #map {
+                height: 50vh; /* 모바일에서는 절반 높이 */
+            }
+
+            /* 하단 인풋 및 버튼 고정 */
+            #map_wrap_bottom {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: auto;
+                background: rgba(255, 255, 255, 0.9);
+                padding: 15px;
+                box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                z-index: 10;
+                border-radius: 10px 10px 0 0;
+            }
+
+            .coordinates-input {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+
+            .coordinates-input input,
+            .coordinates-input select,
+            .coordinates-input button {
+                width: 100%; /* 모바일에서 전체 너비 사용 */
+                font-size: 1em;
+            }
         }
-
-        /* 슬라이드 핸들 */
-        .slide-handle {
-            width: 40px;
-            height: 5px;
-            background: #ccc;
-            border-radius: 3px;
-            margin: 10px auto;
-            cursor: pointer;
-        }
-
-
         .delete-btn {
             position: absolute;
             top: 10px;
@@ -232,24 +244,6 @@
         margin: 0 5px; /* 가로 메뉴 간 간격 추가 */
         font-size: 10px;
     }
-    /* 모바일 전용 스타일 */
-        @media (max-width: 768px) {
-            #map {
-                height: 50vh;
-            }
-
-            /* 패널을 화면 중간까지 확장 */
-            #map_wrap_bottom.expanded {
-                transform: translateY(0);
-            }
-        }
-
-        /* 데스크톱에서는 패널 숨기기 */
-        @media (min-width: 769px) {
-            #map_wrap_bottom {
-                display: none;
-            }
-        }
     </style>
 </head>
 <body>
@@ -266,7 +260,6 @@
             </div>
         </div>
         <div id="map_wrap_bottom">
-                    <div class="slide-handle" id="slideHandle"></div>
             <div class="map_options_bottom">
                 <div id="result"></div>
                 <div class="coordinates-input">
@@ -320,13 +313,6 @@
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 {% load static %}
     <script>
-                const slideHandle = document.getElementById('slideHandle');
-        const mapWrapBottom = document.getElementById('map_wrap_bottom');
-
-        // 슬라이드 핸들 클릭 시 패널 열고 닫기
-        slideHandle.addEventListener('click', () => {
-            mapWrapBottom.classList.toggle('expanded');
-        });
     // 출발지 입력 필드에 포커스
     function focusStartField() {
         document.getElementById('startLatLng').focus();
