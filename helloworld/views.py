@@ -21,6 +21,8 @@ from django.http import JsonResponse
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
+from collections import defaultdict
+from .models import Station
 
 
 # Local app imports
@@ -52,11 +54,13 @@ transfer_time = 5.0  # 환승 시간 5분
 
 def station_map(request):
     # stations = Station.objects.all()  # 모든 역 데이터 가져오기
-    return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
+    return render(request, 'kakao.html', {'stations': load_stations_from_db()})
 
 
-# Helper function to load stations from the database
-def load_stations_from_csv():
+
+from collections import defaultdict
+
+def load_stations_from_db():
     global stations_cache
     if stations_cache is None:
         stations = []
@@ -64,26 +68,63 @@ def load_stations_from_csv():
 
         # Retrieve all station records from the database
         for station in Station.objects.all():
+            # 소수점 넷째 자리에서 버림하여 위도와 경도 저장
             station_info = {
                 'name': station.name,
                 'line': station.line,
-                'latitude': station.latitude,
-                'longitude': station.longitude,
-                # 환승 정보는 DB에서 읽지 않고 나중에 계산됨
+                'latitude': int(station.latitude * 10000) / 10000,
+                'longitude': int(station.longitude * 10000) / 10000,
+                'is_transfer': station.is_transfer,  # DB의 is_transfer 값을 사용
             }
-            station_map[station.name].append(station_info)
+            # (이름, 내림된 위도, 내림된 경도)를 키로 station_map에 추가
+            station_map[(station_info['name'], station_info['latitude'], station_info['longitude'])].append(
+                station_info)
 
-        for station_name, station_list in station_map.items():
-            # 동일한 역 이름이 여러 노선에 걸쳐 있을 경우 환승역으로 처리
-            is_transfer = len(station_list) > 1
+        for (station_name, latitude, longitude), station_list in station_map.items():
+            # 같은 이름과 위도, 경도를 가진 모든 노선의 is_transfer가 True일 때만 환승역으로 처리
+            is_transfer = len(station_list) > 1 and all(station['is_transfer'] for station in station_list)
             for station in station_list:
-                station['transfer'] = is_transfer  # 환승 여부를 계산
+                station['transfer'] = is_transfer  # 환승 여부 설정
+
+                # 환승이 아닌 경우 False로 설정
+                if not is_transfer:
+                    station['transfer'] = False
 
             stations.extend(station_list)
+
         # Cache the results
-        print(stations_cache)
         stations_cache = stations
+        print(stations_cache)
     return stations_cache
+# # Helper function to load stations from the database
+# def load_stations_from_db():
+#     global stations_cache
+#     if stations_cache is None:
+#         stations = []
+#         station_map = defaultdict(list)
+#
+#         # Retrieve all station records from the database
+#         for station in Station.objects.all():
+#             station_info = {
+#                 'name': station.name,
+#                 'line': station.line,
+#                 'latitude': station.latitude,
+#                 'longitude': station.longitude,
+#                 # 환승 정보는 DB에서 읽지 않고 나중에 계산됨
+#             }
+#             station_map[station.name].append(station_info)
+#
+#         for station_name, station_list in station_map.items():
+#             # 동일한 역 이름이 여러 노선에 걸쳐 있을 경우 환승역으로 처리
+#             is_transfer = len(station_list) > 1
+#             for station in station_list:
+#                 station['transfer'] = is_transfer  # 환승 여부를 계산
+#
+#             stations.extend(station_list)
+#         # Cache the results
+#         print(stations_cache)
+#         stations_cache = stations
+#     return stations_cache
 
 
 # Function to create an optimized graph using data from the database
@@ -197,7 +238,7 @@ def find_shortest_route(request):
                 path = nx.dijkstra_path(subway_graph, start_station_with_line, end_station_with_line, weight='weight')
 
                 # CSV에서 역 정보 로드
-                stations = load_stations_from_csv()
+                stations = load_stations_from_db()
                 total_time = 0  # 종합 시간 초기화
                 transfer_count = 0
                 regular_count = 0
@@ -333,7 +374,7 @@ def find_nearest_stations(request):
                 return JsonResponse({'error': '좌표 정보가 필요합니다.'}, status=400)
 
             # 역 데이터 불러오기 (예: CSV 파일에서 불러오기)
-            stations = load_stations_from_csv()
+            stations = load_stations_from_db()
 
 
             # 선택된 노선 필터링
@@ -466,13 +507,17 @@ def add_station(request):
                 max_sort_order = Station.objects.filter(line=data['line']).aggregate(Max('sort_order'))['sort_order__max']
                 sort_order = max_sort_order + 1 if max_sort_order is not None else 1
 
+            # is_transfer 값이 제공되지 않으면 기본값 False로 설정
+            is_transfer = data.get('is_transfer', False)
+
             # 새 역 생성 및 저장
             new_station = Station(
                 name=data['name'],
                 line=data['line'],
                 latitude=data['latitude'],
                 longitude=data['longitude'],
-                sort_order=sort_order
+                sort_order=sort_order,
+                is_transfer=is_transfer
             )
             new_station.save()
 
@@ -485,7 +530,6 @@ def add_station(request):
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
-
 @csrf_exempt
 def delete_station(request, station_name, station_line):
     global stations_cache  # 전역 변수인 stations_cache를 사용합니다.
@@ -536,6 +580,34 @@ def delete_station(request, station_name, station_line):
 #
 #     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
+
+@csrf_exempt
+def update_station(request, station_name, station_line):
+    global stations_cache  # 전역 변수인 stations_cache를 사용합니다.
+    if request.method == 'PUT':
+        try:
+            # 요청 데이터에서 새로운 역 정보 가져오기
+            data = json.loads(request.body)
+
+            # 기존 역 정보 가져오기
+            station = get_object_or_404(Station, name=station_name, line=station_line)
+
+            # 역 정보 업데이트
+            station.name = data.get('name', station.name)
+            station.line = data.get('line', station.line)
+            station.latitude = data.get('latitude', station.latitude)
+            station.longitude = data.get('longitude', station.longitude)
+            station.is_transfer = data.get('is_transfer', station.is_transfer)
+            station.save()  # 변경사항 저장
+            # 캐시 초기화
+            stations_cache = None
+            return JsonResponse({'status': 'success', 'message': 'Station updated successfully'}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
 def station_detail(request, station_name, station_line):
     print(f"요청된 역 이름: {station_name}, 요청된 노선: {station_line}")  # 디버깅용 출력
 
@@ -550,7 +622,8 @@ def station_detail(request, station_name, station_line):
         'line': station.line,
         'latitude': station.latitude,
         'longitude': station.longitude,
-        'sort_order': station.sort_order
+        'sort_order': station.sort_order,
+        'is_transfer': station.is_transfer  # is_transfer 필드 추가
     }
 
     print(f"찾은 역 정보: {station_data}")  # 디버깅용 출력
@@ -589,5 +662,5 @@ def display_csv(request):
 
 
 def kakaomap(request):
-    return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
+    return render(request, 'kakao.html', {'stations': load_stations_from_db()})
 

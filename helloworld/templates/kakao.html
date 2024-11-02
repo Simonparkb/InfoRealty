@@ -36,7 +36,7 @@
     /* 버튼 스타일 */
     .coordinates-input button {
         padding: 8px 8px;
-        font-size: 0.5em;
+        font-size: 0.9em;
         background-color: skyblue;
         color: black;
         border: none;
@@ -54,6 +54,7 @@
         font-size: 1.2em;
         width: 100%;
     }
+
     /* 결과 표시 스타일 */
     .station-info {
         margin-top: 15px;
@@ -86,71 +87,70 @@
         font-size: 1.2em;
     }
 
+    /* 오버레이 스타일 */
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
 
-        /* 오버레이 스타일 */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
+    /* 팝업 스타일 */
+    .popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100px;
+        max-width: 500px;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 20px;
+        z-index: 1000;
+        overflow-y: auto;
+        max-height: 50%;
+    }
 
-        /* 팝업 스타일 */
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            max-width: 500px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 20px;
-            z-index: 1000;
-            overflow-y: auto;
-            max-height: 50%;
-        }
+    .popup img {
+        width: 100%;
+        height: auto;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        transition: transform 0.3s ease;
+        max-height: 50%;
+    }
 
-        .popup img {
-            width: 100%;
-            height: auto;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            transition: transform 0.3s ease;
-            max-height: 50%;
-        }
+    /* 이미지 호버 효과 */
+    .popup img:hover {
+        transform: scale(1.05);
+    }
 
-        /* 이미지 호버 효과 */
-        .popup img:hover {
-            transform: scale(1.05);
-        }
+    /* 팝업 헤더 */
+    .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
 
-        /* 팝업 헤더 */
-        .popup-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
+    /* 닫기 버튼 스타일 */
+    .popup-close {
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 10px;
+    }
 
-        /* 닫기 버튼 스타일 */
-        .popup-close {
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 10px;
-        }
-
-        /* 스크롤바 숨기기 */
-        .popup::-webkit-scrollbar {
-            display: none;
-        }
+    /* 스크롤바 숨기기 */
+    .popup::-webkit-scrollbar {
+        display: none;
+    }
 
     /* 모바일 스타일 */
     @media (max-width: 768px) {
@@ -161,31 +161,34 @@
         /* 모바일에서 세로 정렬 */
         .coordinates-input {
             flex-direction: column;
-            align-items: flex-start;
+            align-items: stretch;
+            gap: 10px;
         }
 
         .coordinates-input input,
         .coordinates-input select,
         .coordinates-input button {
             width: 100%; /* 모바일에서 전체 너비 사용 */
+            font-size: 1em;
         }
     }
-        .delete-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 50%;  /* 원형 버튼 */
-            font-weight: bold;
-        }
 
-        .delete-btn:hover {
-            background-color: #ff0000;  /* 버튼 호버 효과 */
-        }
+    .delete-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 50%;  /* 원형 버튼 */
+        font-weight: bold;
+    }
+
+    .delete-btn:hover {
+        background-color: #ff0000;  /* 버튼 호버 효과 */
+    }
     .map_wrap {
         position: relative;
         width: 100%;
@@ -226,11 +229,11 @@
         margin: 0 5px; /* 가로 메뉴 간 간격 추가 */
         font-size: 10px;
     }
-    </style>
+</style>
 </head>
 <body>
     <div class="map_wrap">
-        <div id="map" style="width:100%;height:120%;"></div>
+        <div id="map" style="width:100%;height:150%;"></div>
         <div id="menu_wrap">
             <div class="map_options">
                 <p><label>지도 정보:</label></p>
@@ -261,6 +264,9 @@
                     <label for="line">노선:</label>
                     <input type="text" id="line">
 
+                    <label for="isTransfer">환승 여부:</label>
+                    <input type="checkbox" id="isTransfer">
+
                     <button id="resetButton">초기화</button>
 
                     <!-- This will show a message if the user doesn't select a position or line -->
@@ -272,7 +278,7 @@
                     </select>
                         <button id="addStationButton">역 추가</button>
                         <button id="deleteStationButton">역 삭제</button>
-
+                        <button id="updateStationButton">역 수정</button>
                         <button id="showImagesButton">노선 정보</button>
                         <button id="addNewLineButton">신규 노선 추가</button>
                         <div class="overlay" id="overlay"></div>
@@ -562,6 +568,7 @@
                 document.getElementById('startLng').value = data.longitude;
                 document.getElementById('name').value = data.name;
                 document.getElementById('line').value = data.line;
+                document.getElementById('isTransfer').checked = data.is_transfer;  // 환승 여부 설정
             })
             .catch(error => {
                 console.error('역 정보를 가져오는 중 오류 발생:', error);
@@ -584,6 +591,7 @@
         const line = document.getElementById('line').value;
         const latitude = parseFloat(document.getElementById('startLat').value);
         const longitude = parseFloat(document.getElementById('startLng').value);
+        const isTransfer = document.getElementById('isTransfer').checked;  // 환승 여부 추가
 
         if (!name || isNaN(latitude) || isNaN(longitude)) {
             alert("모든 필드를 채워주세요.");
@@ -612,7 +620,8 @@
             line: line,
             latitude: latitude,
             longitude: longitude,
-            position: position
+            position: position,
+            is_transfer: isTransfer  // 환승 여부 추가
         };
 
         // Include selected station's sort order if available
@@ -686,6 +695,63 @@
         });
     });
 
+
+        document.getElementById('updateStationButton').addEventListener('click', function() {
+            if (!selectedStation || !selectedStation.name || !selectedStation.line) {
+                alert("수정할 역을 먼저 선택하세요.");
+                return;
+            }
+
+            const name = document.getElementById('name').value;
+            const line = document.getElementById('line').value;
+            const latitude = parseFloat(document.getElementById('startLat').value);
+            const longitude = parseFloat(document.getElementById('startLng').value);
+            const isTransfer = document.getElementById('isTransfer').checked;
+
+            if (!name || isNaN(latitude) || isNaN(longitude)) {
+                alert("모든 필드를 채워주세요.");
+                return;
+            }
+
+            const updatedStation = {
+                name: name,
+                line: line,
+                latitude: latitude,
+                longitude: longitude,
+                is_transfer: isTransfer
+            };
+
+            // 서버로 PUT 요청을 보내 선택된 역 정보를 수정
+            fetch(`/stations/update/${selectedStation.name}/${selectedStation.line}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()  // CSRF 토큰 포함
+                },
+                body: JSON.stringify(updatedStation)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => { throw new Error(data.message); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert("역 정보가 수정되었습니다!");
+                resetInputFields();
+                console.log(data);
+                location.reload();
+            })
+            .catch(error => {
+                alert(error.message);
+                console.error('Error updating station:', error);
+            });
+        });
+
+
+
+
+
     // 역 정보를 화면에 간결하게 표시하는 함수
     function displayStationInfo(station) {
         const resultDiv = document.getElementById('result');
@@ -705,6 +771,7 @@
         document.getElementById('startLng').value = '';
         document.getElementById('name').value = '';
         document.getElementById('line').value = '';
+        document.getElementById('isTransfer').checked = false;  // 환승 여부 초기화
         selectedStation = null;  // Clear the selected station
     });
 

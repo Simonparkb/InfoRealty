@@ -3,10 +3,10 @@ from django.db import transaction
 from django.db.models import F
 from .models import Station, ActivityLog
 
-
 @admin.register(Station)
 class StationAdmin(admin.ModelAdmin):
-    list_display = ('line', 'name', 'latitude', 'longitude', 'sort_order')
+    list_display = ('line', 'name', 'latitude', 'longitude', 'sort_order', 'is_transfer')  # is_transfer 추가
+    list_filter = ('line', 'is_transfer')  # 필터에 is_transfer 추가
     actions = ['reset_sort_order_action']  # 상단 액션 메뉴에 추가
 
     @transaction.atomic
