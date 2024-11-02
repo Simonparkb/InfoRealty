@@ -50,6 +50,10 @@ line_travel_times = {
 # 환승 시간을 정의
 transfer_time = 5.0  # 환승 시간 5분
 
+def station_map(request):
+    # stations = Station.objects.all()  # 모든 역 데이터 가져오기
+    return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
+
 
 # Helper function to load stations from the database
 def load_stations_from_csv():
@@ -77,6 +81,7 @@ def load_stations_from_csv():
 
             stations.extend(station_list)
         # Cache the results
+        print(stations_cache)
         stations_cache = stations
     return stations_cache
 
@@ -137,15 +142,6 @@ def create_optimized_graph():
 
 
 
-
-
-
-
-
-
-def station_map(request):
-    stations = Station.objects.all()  # 모든 역 데이터 가져오기
-    return render(request, 'kakao.html', {'stations': load_stations_from_csv()})
 
 
 def departures(request):
@@ -373,6 +369,7 @@ def find_nearest_stations(request):
 
 @csrf_exempt
 def add_new_line(request):
+    global stations_cache  # 전역 변수인 stations_cache를 사용합니다.
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -396,7 +393,8 @@ def add_new_line(request):
                 longitude=longitude,
                 sort_order=new_sort_order
             )
-
+            # 캐시 초기화
+            stations_cache = None
             return JsonResponse({'message': '신규 라인이 성공적으로 추가되었습니다.', 'station_id': new_station.id}, status=201)
         except Exception as e:
             return JsonResponse({'message': '신규 라인 추가 중 오류 발생: ' + str(e)}, status=400)
@@ -436,6 +434,7 @@ def add_new_line(request):
 
 @csrf_exempt
 def add_station(request):
+    global stations_cache  # 전역 변수인 stations_cache를 사용합니다.
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -477,6 +476,9 @@ def add_station(request):
             )
             new_station.save()
 
+            # 캐시 초기화
+            stations_cache = None
+
             return JsonResponse({'status': 'success', 'message': 'Station added successfully'}, status=201)
 
         except json.JSONDecodeError:
@@ -486,6 +488,7 @@ def add_station(request):
 
 @csrf_exempt
 def delete_station(request, station_name, station_line):
+    global stations_cache  # 전역 변수인 stations_cache를 사용합니다.
     if request.method == 'DELETE':
         try:
             # 삭제할 역을 `name`과 `line`으로 필터링하여 정확한 하나의 역만 삭제
@@ -499,6 +502,9 @@ def delete_station(request, station_name, station_line):
 
             # 삭제한 역의 위치 이후 해당 노선 내 역들의 sort_order만 -1
             Station.objects.filter(line=station_line, sort_order__gt=sort_order_to_delete).update(sort_order=F('sort_order') - 1)
+
+            # 캐시 초기화
+            stations_cache = None
 
             return JsonResponse({'status': 'success', 'message': 'Station deleted successfully'}, status=200)
 
