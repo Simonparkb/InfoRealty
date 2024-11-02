@@ -240,11 +240,23 @@ if (departureData && destinationData) {
 
     updateSummaryBox(departureStation, departureLine, destinationStation, destinationLine, asIsTime, toBeTime);
 
-    if (isDepartureInToBeLines || isDestinationInToBeLines) {
-        fetchRouteSequentially(routeData, '최단 경로', asIsLines, 'TO BE');
-    } else if (isDepartureInAsIsLines && isDestinationInAsIsLines) {
-        fetchRouteSequentially(routeData, '최단 경로', toBeLines, 'AS IS')
-            .then(() => fetchRouteSequentially(routeData, '최단 경로', [], 'TO BE'));
+    // 출발역과 도착역이 모두 toBeLines에 없으면 "현재 노선"만 조회
+    if (!isDepartureInToBeLines && !isDestinationInToBeLines) {
+        if (isDepartureInAsIsLines && isDestinationInAsIsLines) {
+            fetchRouteSequentially(routeData, '최단 경로', toBeLines, 'AS IS');
+        } else {
+            document.getElementById('shortestRoute').innerHTML = '<p>현재 노선에서 경로를 찾을 수 없습니다.</p>';
+        }
+    } else {
+        // TO BE 노선에 포함될 때만 미래 노선 경로 조회 추가
+        if (isDepartureInToBeLines || isDestinationInToBeLines) {
+            fetchRouteSequentially(routeData, '최단 경로', asIsLines, 'TO BE');
+        }
+
+        // 현재 노선에서 경로 조회
+        if (isDepartureInAsIsLines && isDestinationInAsIsLines) {
+            fetchRouteSequentially(routeData, '최단 경로', toBeLines, 'AS IS');
+        }
     }
 } else {
     alert("출발지 또는 도착지 정보가 없습니다.");
@@ -302,21 +314,24 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
             `;
 
 
-            routeInfo += routeResult.route.map((station, index) => {
-                // Generate the station bubble
-                let stationBubble = `
-                    <span class="station-info ${station.transfer ? 'transfer' : ''}">
-                        <strong>${station.name}</strong>
-                    </span>
-                `;
+            // 환승역만 포함하여 표시
+            routeInfo += routeResult.route
+                .filter(station => station.transfer) // 환승역만 선택
+                .map((station, index, filteredStations) => {
+                    // Generate the station bubble for transfer stations
+                    let stationBubble = `
+                        <span class="station-info transfer">
+                            <strong>${station.name}</strong>
+                        </span>
+                    `;
 
-                // Add a standard connector after each station, except the last one
-                if (index < routeResult.route.length - 1) {
-                    stationBubble += `<span class="connector"></span>`;
-                }
+                    // Add a standard connector after each station, except the last one
+                    if (index < filteredStations.length - 1) {
+                        stationBubble += `<span class="connector"></span>`;
+                    }
 
-                return stationBubble;
-            }).join('');
+                    return stationBubble;
+                }).join('');
 
 
             // Add a special connector and a red ending bubble

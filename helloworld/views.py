@@ -24,7 +24,6 @@ from django.dispatch import receiver
 from collections import defaultdict
 from .models import Station
 
-
 # Local app imports
 from .models import Station  # Importing only Station from .models
 
@@ -56,15 +55,12 @@ def station_map(request):
     # stations = Station.objects.all()  # 모든 역 데이터 가져오기
     return render(request, 'kakao.html', {'stations': load_stations_from_db()})
 
-
-
-from collections import defaultdict
-
 def load_stations_from_db():
     global stations_cache
     if stations_cache is None:
         stations = []
         station_map = defaultdict(list)
+        transfer_map = defaultdict(list)
 
         # Retrieve all station records from the database
         for station in Station.objects.all():
@@ -76,19 +72,26 @@ def load_stations_from_db():
                 'longitude': int(station.longitude * 10000) / 10000,
                 'is_transfer': station.is_transfer,  # DB의 is_transfer 값을 사용
             }
-            # (이름, 내림된 위도, 내림된 경도)를 키로 station_map에 추가
+            # (이름, 정수부 위도, 정수부 경도)를 키로 transfer_map에 추가 (환승 확인용)
+            transfer_key = (station_info['name'], int(station.latitude), int(station.longitude))
+            transfer_map[transfer_key].append(station_info)
+
+            # 소수점 이하 포함한 위치 정보를 기준으로 station_map에 추가 (캐시 저장용)
             station_map[(station_info['name'], station_info['latitude'], station_info['longitude'])].append(
-                station_info)
+                station_info
+            )
 
+        # 환승 여부 설정
         for (station_name, latitude, longitude), station_list in station_map.items():
-            # 같은 이름과 위도, 경도를 가진 모든 노선의 is_transfer가 True일 때만 환승역으로 처리
-            is_transfer = len(station_list) > 1 and all(station['is_transfer'] for station in station_list)
-            for station in station_list:
-                station['transfer'] = is_transfer  # 환승 여부 설정
+            # transfer_map을 참조하여 환승 여부 설정
+            transfer_key = (station_name, int(latitude), int(longitude))
+            is_transfer = len(transfer_map[transfer_key]) > 1 and all(
+                st['is_transfer'] for st in transfer_map[transfer_key]
+            )
 
-                # 환승이 아닌 경우 False로 설정
-                if not is_transfer:
-                    station['transfer'] = False
+            # station_map의 정보에 환승 여부를 반영
+            for station in station_list:
+                station['transfer'] = is_transfer
 
             stations.extend(station_list)
 
@@ -96,35 +99,6 @@ def load_stations_from_db():
         stations_cache = stations
         print(stations_cache)
     return stations_cache
-# # Helper function to load stations from the database
-# def load_stations_from_db():
-#     global stations_cache
-#     if stations_cache is None:
-#         stations = []
-#         station_map = defaultdict(list)
-#
-#         # Retrieve all station records from the database
-#         for station in Station.objects.all():
-#             station_info = {
-#                 'name': station.name,
-#                 'line': station.line,
-#                 'latitude': station.latitude,
-#                 'longitude': station.longitude,
-#                 # 환승 정보는 DB에서 읽지 않고 나중에 계산됨
-#             }
-#             station_map[station.name].append(station_info)
-#
-#         for station_name, station_list in station_map.items():
-#             # 동일한 역 이름이 여러 노선에 걸쳐 있을 경우 환승역으로 처리
-#             is_transfer = len(station_list) > 1
-#             for station in station_list:
-#                 station['transfer'] = is_transfer  # 환승 여부를 계산
-#
-#             stations.extend(station_list)
-#         # Cache the results
-#         print(stations_cache)
-#         stations_cache = stations
-#     return stations_cache
 
 
 # Function to create an optimized graph using data from the database
