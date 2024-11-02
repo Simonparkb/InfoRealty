@@ -36,7 +36,7 @@
     /* 버튼 스타일 */
     .coordinates-input button {
         padding: 8px 8px;
-        font-size: 0.9em;
+        font-size: 0.5em;
         background-color: skyblue;
         color: black;
         border: none;
@@ -54,7 +54,6 @@
         font-size: 1.2em;
         width: 100%;
     }
-
     /* 결과 표시 스타일 */
     .station-info {
         margin-top: 15px;
@@ -87,108 +86,112 @@
         font-size: 1.2em;
     }
 
-    /* 오버레이 스타일 */
-    .overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-    }
 
-    /* 팝업 스타일 */
-    .popup {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100px;
-        max-width: 500px;
-        background-color: white;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        border-radius: 8px;
-        padding: 20px;
-        z-index: 1000;
-        overflow-y: auto;
-        max-height: 50%;
-    }
-
-    .popup img {
-        width: 100%;
-        height: auto;
-        margin-bottom: 10px;
-        border-radius: 4px;
-        transition: transform 0.3s ease;
-        max-height: 50%;
-    }
-
-    /* 이미지 호버 효과 */
-    .popup img:hover {
-        transform: scale(1.05);
-    }
-
-    /* 팝업 헤더 */
-    .popup-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 1.2em;
-        margin-bottom: 10px;
-    }
-
-    /* 닫기 버튼 스타일 */
-    .popup-close {
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 10px;
-    }
-
-    /* 스크롤바 숨기기 */
-    .popup::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* 모바일 스타일 */
-    @media (max-width: 768px) {
-        #map {
-            height: 50vh; /* 모바일에서는 절반 높이 */
+        /* 오버레이 스타일 */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
         }
 
-        /* 모바일에서 세로 정렬 */
-        .coordinates-input {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
+        /* 팝업 스타일 */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            max-width: 500px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+            max-height: 50%;
         }
 
-        .coordinates-input input,
-        .coordinates-input select,
-        .coordinates-input button {
-            width: 100%; /* 모바일에서 전체 너비 사용 */
-            font-size: 1em;
+        .popup img {
+            width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            transition: transform 0.3s ease;
+            max-height: 50%;
         }
-    }
 
-    .delete-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #ff4d4d;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        cursor: pointer;
-        border-radius: 50%;  /* 원형 버튼 */
-        font-weight: bold;
-    }
+        /* 이미지 호버 효과 */
+        .popup img:hover {
+            transform: scale(1.05);
+        }
 
-    .delete-btn:hover {
-        background-color: #ff0000;  /* 버튼 호버 효과 */
-    }
+        /* 팝업 헤더 */
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        /* 닫기 버튼 스타일 */
+        .popup-close {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        /* 스크롤바 숨기기 */
+        .popup::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 슬라이드 패널 스타일 */
+        #map_wrap_bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 15px 15px 0 0;
+            transition: transform 0.3s ease;
+            transform: translateY(90%); /* 초기에는 패널을 숨김 */
+        }
+
+        /* 슬라이드 핸들 */
+        .slide-handle {
+            width: 40px;
+            height: 5px;
+            background: #ccc;
+            border-radius: 3px;
+            margin: 10px auto;
+            cursor: pointer;
+        }
+
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 50%;  /* 원형 버튼 */
+            font-weight: bold;
+        }
+
+        .delete-btn:hover {
+            background-color: #ff0000;  /* 버튼 호버 효과 */
+        }
     .map_wrap {
         position: relative;
         width: 100%;
@@ -229,11 +232,29 @@
         margin: 0 5px; /* 가로 메뉴 간 간격 추가 */
         font-size: 10px;
     }
-</style>
+    /* 모바일 전용 스타일 */
+        @media (max-width: 768px) {
+            #map {
+                height: 50vh;
+            }
+
+            /* 패널을 화면 중간까지 확장 */
+            #map_wrap_bottom.expanded {
+                transform: translateY(0);
+            }
+        }
+
+        /* 데스크톱에서는 패널 숨기기 */
+        @media (min-width: 769px) {
+            #map_wrap_bottom {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="map_wrap">
-        <div id="map" style="width:100%;height:130%;"></div>
+        <div id="map" style="width:100%;height:150%;"></div>
         <div id="menu_wrap">
             <div class="map_options">
                 <p><label>지도 정보:</label></p>
@@ -245,6 +266,7 @@
             </div>
         </div>
         <div id="map_wrap_bottom">
+                    <div class="slide-handle" id="slideHandle"></div>
             <div class="map_options_bottom">
                 <div id="result"></div>
                 <div class="coordinates-input">
@@ -298,6 +320,13 @@
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 {% load static %}
     <script>
+                const slideHandle = document.getElementById('slideHandle');
+        const mapWrapBottom = document.getElementById('map_wrap_bottom');
+
+        // 슬라이드 핸들 클릭 시 패널 열고 닫기
+        slideHandle.addEventListener('click', () => {
+            mapWrapBottom.classList.toggle('expanded');
+        });
     // 출발지 입력 필드에 포커스
     function focusStartField() {
         document.getElementById('startLatLng').focus();
