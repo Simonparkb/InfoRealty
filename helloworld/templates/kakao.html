@@ -639,7 +639,7 @@
             alert("새 역이 추가되었습니다!");
             resetInputFields()
             console.log(data);
-            location.reload(true);
+            window.location.href = window.location.href;
         })
         .catch(error => {
             alert(error.message);
@@ -676,7 +676,7 @@
             alert("역이 삭제되었습니다.");
             resetInputFields()
             console.log(data);
-            location.reload(true);  // 페이지 새로고침
+            window.location.href = window.location.href;
 
             // Optionally, reset the form or reload the station list
         })
@@ -785,7 +785,7 @@ document.getElementById('addNewLineButton').addEventListener('click', function()
         alert("신규 라인이 추가되었습니다!");
         resetInputFields();
         console.log(data);
-        location.reload(true);  // 페이지 새로고침
+        window.location.href = window.location.href;
     })
     .catch(error => {
         alert("신규 라인 추가 중 오류가 발생했습니다: " + error.message);
