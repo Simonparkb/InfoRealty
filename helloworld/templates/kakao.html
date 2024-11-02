@@ -32,7 +32,7 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            width: 150px;
+            width: 100px;
             padding: 10px;
             background: rgba(255, 255, 255, 0.9);
             z-index: 1000;
@@ -158,7 +158,6 @@
         <div id="map"></div>
         <div id="menu_wrap">
             <div class="map_options">
-                <p><label>지도 정보:</label></p>
                 <label><input type="checkbox" id="chkUseDistrict" onclick="setOverlayMapTypeId()" /> 지적편집도</label>
                 <label><input type="checkbox" id="chkTerrain" onclick="setOverlayMapTypeId()" /> 지형정보</label>
                 <label><input type="checkbox" id="chkTraffic" onclick="setOverlayMapTypeId()" /> 교통정보</label>
@@ -166,7 +165,6 @@
                 <label><input type="checkbox" id="chkBicycle" onclick="setOverlayMapTypeId()" /> 자전거도로</label>
             </div>
         </div>
-
         <div id="map_wrap_bottom">
             <div id="result"></div>
             <div class="coordinates-input">
