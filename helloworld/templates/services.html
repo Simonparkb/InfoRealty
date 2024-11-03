@@ -419,7 +419,7 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                 const card = document.createElement('div');
                 card.classList.add('route-card');
                 card.innerHTML = `
-                    <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}<button class="detail-button">자세히 보기</button></h3>
+                    <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) <button class="detail-button">자세히 보기</button></h3>
                     ${routeContainer}
                     <br>
                     <h3>새소식</h3>
