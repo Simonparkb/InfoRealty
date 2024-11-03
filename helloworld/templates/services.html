@@ -183,7 +183,7 @@
 
         /* Detail button */
         .detail-button {
-              display: inline-block;
+            display: inline-block;
             background-color: #444;
             color: #1e1e1e;
             font-size: 0.8rem;
@@ -221,25 +221,20 @@
             }
         }
     .share-button {
-        width: 30%; /* Full width within the container */
-        padding: 0px 0;
-        margin-left: 35%;
-        margin-top: 5px;
-        background-color: #3a86ff; /* Modern, vibrant blue color */
-        color: #ffffff;
-        font-size: 18px;
-        font-weight: 600;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        text-align: center;
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
-        transition: background-color 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+            background-color: #3a86ff;
+            color: #1e1e1e;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 25%;
+            width: 50%;
+
     }
 
     .share-button:hover {
-        background-color: #265ecd; /* Slightly darker blue on hover */
-        transform: translateY(-2px); /* Subtle lift effect on hover */
+            background-color: #3a86ff;
     }
 
     .share-button:active {
@@ -408,13 +403,13 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
 
                 `;
 
-                let labelHtml = `
-                    <div class="label-container">
-                        <span class="${statusLabel === 'TO BE' ? 'tobe-label' : 'asis-label'}">
-                            ${statusLabel === 'TO BE' ? '미래 노선' : '현재 노선'}
-                        </span>
-                    </div>
-                `;
+<!--                let labelHtml = `-->
+<!--                    <div class="label-container">-->
+<!--                        <span class="${statusLabel === 'TO BE' ? 'tobe-label' : 'asis-label'}">-->
+<!--                            ${statusLabel === 'TO BE' ? '미래 노선' : '현재 노선'}-->
+<!--                        </span>-->
+<!--                    </div>-->
+<!--                `;-->
 
                 const card = document.createElement('div');
                 card.classList.add('route-card');
