@@ -392,6 +392,7 @@
             'line': '{{ station.line }}',
             'latitude': {{ station.latitude }},
             'longitude': {{ station.longitude }},
+            'sort_order': {{ station.sort_order }},
             'transfer': {{ station.transfer|yesno:"true,false" }}
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
@@ -462,6 +463,7 @@
                     노선: ${station.line}호선<br>
                     위도: ${station.latitude.toFixed(4)}<br>
                     경도: ${station.longitude.toFixed(4)}<br>
+                    순서: ${station.sort_order}<br>
                     환승역: ${station.transfer ? 'true' : 'false'}
                 </div>
             `,

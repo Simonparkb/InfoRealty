@@ -30,8 +30,23 @@
             gap: 20px;
             color: #e0e0e0;
             box-sizing: border-box;
+            height: 800px;
+        }
+        .route-info-details {
+            max-height: 600px; /* Adjust the height as needed */
+            overflow-y: auto; /* Enable vertical scrolling within this section */
+            margin-top: 10px;
+            border-top: 1px solid #555;
         }
 
+        .route-info-details .station-detail {
+            padding: 10px 0;
+            border-bottom: 1px solid #555;
+        }
+
+        .route-info-details .station-detail:last-child {
+            border-bottom: none;
+        }
         .summary-box {
             text-align: center;
             font-size: 1.1rem;
@@ -90,54 +105,54 @@
             border-radius: 5px;
             box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
         }
-/* Start (modern gradient blue) bubble */
-.start-bubble {
-    background: linear-gradient(135deg, #4f93f9, #1f78d1);
-    color: white;
-    font-weight: bold;
-    padding: 10px;
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    font-size: 1.2rem; /* Increase font size */
-}
+        /* Start (modern gradient blue) bubble */
+        .start-bubble {
+            background: linear-gradient(135deg, #4f93f9, #1f78d1);
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            font-size: 1.2rem; /* Increase font size */
+        }
 
-/* End (modern gradient coral) bubble */
-.end-bubble {
-    background: linear-gradient(135deg, #ff7e5f, #fc5c9c);
-    color: white;
-    font-weight: bold;
-    padding: 10px;
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    font-size: 1.2rem; /* Increase font size */
-}
+        /* End (modern gradient coral) bubble */
+        .end-bubble {
+            background: linear-gradient(135deg, #ff7e5f, #fc5c9c);
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            font-size: 1.2rem; /* Increase font size */
+        }
 
 
-/* Special connector with three consecutive dots */
-.special-connector {
-    width: 50px;
-    height: 10px;
-    background-color: transparent;
-    margin: 0 5px;
-    flex-shrink: 0;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-}
+        /* Special connector with three consecutive dots */
+        .special-connector {
+            width: 50px;
+            height: 10px;
+            background-color: transparent;
+            margin: 0 5px;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
 
-/* Dots inside the special connector */
-.special-connector::before,
-.special-connector::after,
-.special-connector .dot {
-    content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background-color: skyblue;
-    border-radius: 50%;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-}
+        /* Dots inside the special connector */
+        .special-connector::before,
+        .special-connector::after,
+        .special-connector .dot {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: skyblue;
+            border-radius: 50%;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
         /* Label styling */
         .asis-label, .tobe-label {
             display: inline-block;
@@ -262,6 +277,9 @@ if (departureData && destinationData) {
     alert("출발지 또는 도착지 정보가 없습니다.");
 }
 
+
+
+
 function updateSummaryBox(asIsTime, toBeTime) {
     let summaryText = '';
 
@@ -347,34 +365,52 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
             // Wrap all in a container
             const routeContainer = `
                 <div class="route-info-container">
-                    ${routeInfo}
+                        ${routeInfo}
+                    </div>
+
+
+                `;
+
+                let labelHtml = `
+                    <div class="label-container">
+                        <span class="${statusLabel === 'TO BE' ? 'tobe-label' : 'asis-label'}">
+                            ${statusLabel === 'TO BE' ? '미래 노선' : '현재 노선'}
+                        </span>
+                    </div>
+                `;
+
+                const card = document.createElement('div');
+                card.classList.add('route-card');
+                card.innerHTML = `
+                    <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}<button class="detail-button">자세히 보기</button></h3>
+                    ${routeContainer}
+                    <br>
+
+                  <div class="route-info-details">
+                    ${routeResult.route
+                        .filter(station => {
+                            const openingYear = new Date(station.opening_date).getFullYear();
+                            return openingYear >= 1960;
+                        })
+                        .map(station => `
+                            <div class="station-detail">
+                                <strong>${station.name} (${station.line})</strong><br>
+                                Opening Date: ${station.opening_date || 'N/A'}<br>
+                                Description: ${station.description || 'No description available'}<br>
+                            </div>
+                        `).join('')}
                 </div>
-            `;
+                `;
 
-            let labelHtml = `
-                <div class="label-container">
-                    <span class="${statusLabel === 'TO BE' ? 'tobe-label' : 'asis-label'}">
-                        ${statusLabel === 'TO BE' ? '미래 노선' : '현재 노선'}
-                    </span>
-                </div>
-            `;
+                card.querySelector('.detail-button').addEventListener('click', function() {
+                    alert('준비중입니다.');
+                });
 
-            const card = document.createElement('div');
-            card.classList.add('route-card');
-            card.innerHTML = `
-                <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}<button class="detail-button">자세히 보기</button></h3>
-                ${routeContainer}
-            `;
-
-            card.querySelector('.detail-button').addEventListener('click', function() {
-                alert('준비중입니다.');
-            });
-
-            document.getElementById('shortestRoute').appendChild(card);
-        } else {
-            document.getElementById('shortestRoute').innerHTML = '<p>경로가 존재하지 않습니다.</p>';
-        }
-    } catch (error) {
+                document.getElementById('shortestRoute').appendChild(card);
+            } else {
+                document.getElementById('shortestRoute').innerHTML = '<p>경로가 존재하지 않습니다.</p>';
+            }
+        } catch (error) {
         console.error('Error fetching the shortest route:', error);
     }
 }

@@ -30,6 +30,18 @@ from .models import Station  # Importing only Station from .models
 
 logger = logging.getLogger(__name__)
 
+def departures(request):
+    return render(request, 'departures.html')
+
+def arrivals(request):
+    return render(request, 'arrivals.html')
+
+def services(request):
+    return render(request, 'services.html')
+
+def log_activity(user, action):
+    ActivityLog.objects.create(user=user, action=action)
+
 # 전역 변수로 캐시할 데이터
 stations_cache = None
 graph_cache = None
@@ -42,14 +54,13 @@ line_travel_times = {
     '4': 2.1,  # 4호선: 2.1분
     '5': 2.3,  # 5호선: 2.3분
     '6': 2.4,  # 6호선: 2.4분
-    '7': 2.5,  # 7호선: 2.5분
+    '7': 0.5,  # 7호선: 2.5분
     '8': 2.6,  # 8호선: 2.6분
     '9': 2.7,  # 9호선: 2.7분
     'Sinbundang': 1.5,  # 신분당선: 1.5분
     'Suinbundang': 1.5  # 신분당선: 1.5분
 }
-# 환승 시간을 정의
-transfer_time = 5.0  # 환승 시간 5분
+
 
 def station_map(request):
     # stations = Station.objects.all()  # 모든 역 데이터 가져오기
@@ -62,117 +73,116 @@ def load_stations_from_db():
         station_map = defaultdict(list)
         transfer_map = defaultdict(list)
 
-        # Retrieve all station records from the database
         for station in Station.objects.all():
-            # 소수점 넷째 자리에서 버림하여 위도와 경도 저장
             station_info = {
                 'name': station.name,
                 'line': station.line,
                 'latitude': int(station.latitude * 10000) / 10000,
                 'longitude': int(station.longitude * 10000) / 10000,
-                'is_transfer': station.is_transfer,  # DB의 is_transfer 값을 사용
+                'sort_order': station.sort_order,
+                'is_transfer': station.is_transfer,
+                'branch_ids': station.branch_ids,
+                'is_branch_point': station.is_branch_point,
+                'opening_date': station.opening_date,  # Add opening date
+                'description': station.description,  # Add description
             }
-            # (이름, 정수부 위도, 정수부 경도)를 키로 transfer_map에 추가 (환승 확인용)
+
             transfer_key = (station_info['name'], int(station.latitude), int(station.longitude))
             transfer_map[transfer_key].append(station_info)
 
-            # 소수점 이하 포함한 위치 정보를 기준으로 station_map에 추가 (캐시 저장용)
-            station_map[(station_info['name'], station_info['latitude'], station_info['longitude'])].append(
-                station_info
-            )
+            station_map[(station_info['name'], station_info['latitude'], station_info['longitude'])].append(station_info)
 
-        # 환승 여부 설정
         for (station_name, latitude, longitude), station_list in station_map.items():
-            # transfer_map을 참조하여 환승 여부 설정
             transfer_key = (station_name, int(latitude), int(longitude))
-            is_transfer = len(transfer_map[transfer_key]) > 1 and all(
+            is_transfer = len(transfer_map[transfer_key]) > 1 or any(
                 st['is_transfer'] for st in transfer_map[transfer_key]
             )
 
-            # station_map의 정보에 환승 여부를 반영
             for station in station_list:
                 station['transfer'] = is_transfer
+                if station['is_branch_point'] and station['branch_ids']:
+                    station['branch_point'] = True
+                else:
+                    station['branch_point'] = False
 
             stations.extend(station_list)
 
-        # Cache the results
+        # print("Loaded stations cache:", stations)
         stations_cache = stations
-        print(stations_cache)
     return stations_cache
 
+# 시간 설정
+transfer_time = 5.0           # 다른 노선 간 환승 시간
+default_travel_time = 2.0      # 같은 노선에서 기본 이동 시간
 
-# Function to create an optimized graph using data from the database
 def create_optimized_graph():
     global graph_cache
     if graph_cache is None:
-        # Initialize an undirected graph
         G = nx.Graph()
 
         try:
-            # Retrieve all station records from the database
             stations = Station.objects.all()
-            # Dictionary to group stations by line and name
             stations_by_line = defaultdict(list)
             stations_by_name = defaultdict(list)
 
-            # Populate the stations_by_line and stations_by_name dictionaries
             for station in stations:
                 stations_by_line[station.line].append(station)
                 stations_by_name[station.name].append(station)
 
-            # 1. Connect adjacent stations on the same line with weighted edges
-            for line, line_stations in stations_by_line.items():
-                # Sort by 'sort_order' to ensure adjacency
-                line_stations.sort(key=lambda x: x.sort_order)
-                travel_time = line_travel_times.get(str(line), 2.0)  # Default travel time of 2 minutes
-
-                for i in range(len(line_stations) - 1):
-                    # Connect consecutive stations on the same line
-                    G.add_edge(
-                        f"({line}){line_stations[i].name}",
-                        f"({line}){line_stations[i + 1].name}",
-                        weight=travel_time  # Apply travel time by line
-                    )
-
-            # 2. Connect stations with the same name on different lines (transfer stations)
+            # 1. 다른 노선 간 동일 역 이름을 가진 경우 환승 연결
             for station_name, matching_stations in stations_by_name.items():
                 if len(matching_stations) > 1:
                     for i in range(len(matching_stations) - 1):
                         for j in range(i + 1, len(matching_stations)):
-                            # Add an edge between stations on different lines with the same name
+                            # 다른 노선 간 동일 역 이름을 가진 경우 환승 시간 적용
                             G.add_edge(
                                 f"({matching_stations[i].line}){matching_stations[i].name}",
                                 f"({matching_stations[j].line}){matching_stations[j].name}",
-                                weight=transfer_time  # Apply transfer time
+                                weight=transfer_time  # 다른 노선 간 환승 시간
                             )
+                            print(f"Added transfer between lines at the same station: "
+                                  f"{matching_stations[i].name} ({matching_stations[i].line}) ↔ "
+                                  f"{matching_stations[j].name} ({matching_stations[j].line}) "
+                                  f"with weight {transfer_time}")
 
-            # Cache the generated graph
+            # 2. 같은 노선에서 동일 branch_id의 역들을 `sort_order` 순서로 인접 연결
+            for line, line_stations in stations_by_line.items():
+                line_stations.sort(key=lambda x: x.sort_order)
+
+                for i in range(len(line_stations) - 1):
+                    current_station = line_stations[i]
+                    next_station = line_stations[i + 1]
+
+                    # 기본 가중치 설정
+                    weight = default_travel_time
+
+                    # `is_transfer`가 True인 경우 가중치를 줄여서 환승을 더 선호하도록 설정
+                    if current_station.is_transfer or next_station.is_transfer:
+                        weight *= 0.8  # 환승 가능한 역에 대한 가중치를 낮춰 더 선호하게 함
+                        print(f"Transfer available between {current_station.name} and {next_station.name} with weight {weight}")
+
+                    # `sort_order` 차이가 작을수록 가중치를 줄여 인접성을 선호
+                    sort_order_diff = abs(current_station.sort_order - next_station.sort_order)
+                    weight -= sort_order_diff * 0.1  # 인접 역 우선
+
+                    # 같은 노선 내 인접 역 연결
+                    G.add_edge(
+                        f"({line}){current_station.name}",
+                        f"({line}){next_station.name}",
+                        weight=weight
+                    )
+                    print(f"Connected adjacent stations on the same line: "
+                          f"{current_station.name} ({current_station.line}) ↔ "
+                          f"{next_station.name} ({next_station.line}) "
+                          f"with weight {weight}")
+
             graph_cache = G
+            # print("Generated graph cache:", G.edges(data=True))
         except Exception as e:
             print(f"An error occurred while creating the graph: {e}")
             return None
 
     return graph_cache
-
-
-
-
-
-
-def departures(request):
-    return render(request, 'departures.html')
-
-def arrivals(request):
-    return render(request, 'arrivals.html')
-
-def services(request):
-    return render(request, 'services.html')
-
-
-
-def log_activity(user, action):
-    ActivityLog.objects.create(user=user, action=action)
-
 
 
 @csrf_exempt
@@ -182,24 +192,22 @@ def find_shortest_route(request):
             data = json.loads(request.body)
             start_station = data.get('startStation')
             end_station = data.get('endStation')
-            exclude_lines = data.get('exclude_lines', [])  # 제외할 노선을 받음. 없으면 빈 리스트
-            print(start_station, end_station, exclude_lines)
+            exclude_lines = data.get('exclude_lines', [])  # List of lines to exclude, empty if not provided
 
             if not start_station or not end_station:
                 return JsonResponse({'error': '출발역과 도착역이 필요합니다.'}, status=400)
 
-            # 최적화된 그래프 생성
+            # Create optimized graph for pathfinding
             subway_graph = create_optimized_graph()
 
-            # # 제외할 노선이 있는 경우 해당 노선의 역들을 그래프에서 제거
-            # if exclude_lines:
-            #     nodes_to_remove = [n for n in subway_graph.nodes if any(f"({line})" in n for line in exclude_lines)]
-            #     subway_graph.remove_nodes_from(nodes_to_remove)
+            # Remove nodes for excluded lines
+            if exclude_lines:
+                nodes_to_remove = [n for n in subway_graph.nodes if any(f"({line})" in n for line in exclude_lines)]
+                subway_graph.remove_nodes_from(nodes_to_remove)
 
-            # 출발역과 도착역을 정확히 매칭 (노선 정보 포함)
+            # Match start and end stations with exact line info
             start_station_with_line = next((n for n in subway_graph.nodes if start_station in n), None)
             end_station_with_line = next((n for n in subway_graph.nodes if end_station in n), None)
-            # print(start_station_with_line, end_station_with_line)
 
             if not start_station_with_line:
                 return JsonResponse({'error': f'출발 역 "{start_station}"을(를) 찾을 수 없습니다.'}, status=404)
@@ -207,13 +215,11 @@ def find_shortest_route(request):
             if not end_station_with_line:
                 return JsonResponse({'error': f'도착 역 "{end_station}"을(를) 찾을 수 없습니다.'}, status=404)
 
-            # 최단 경로 계산 (Dijkstra 알고리즘 사용)
+            # Calculate the shortest path using Dijkstra's algorithm
             try:
                 path = nx.dijkstra_path(subway_graph, start_station_with_line, end_station_with_line, weight='weight')
-
-                # CSV에서 역 정보 로드
                 stations = load_stations_from_db()
-                total_time = 0  # 종합 시간 초기화
+                total_time = 0  # Initialize total travel time
                 transfer_count = 0
                 regular_count = 0
 
@@ -222,42 +228,52 @@ def find_shortest_route(request):
                     current_station = path[i]
                     next_station = path[i + 1]
 
-                    # 현재 역과 다음 역 정보 가져오기
+                    # Fetch station information for the current and next station
                     current_station_info = next(
                         (s for s in stations if current_station == f"({s['line']}){s['name']}"), None)
-                    next_station_info = next((s for s in stations if next_station == f"({s['line']}){s['name']}"), None)
+                    next_station_info = next(
+                        (s for s in stations if next_station == f"({s['line']}){s['name']}"), None)
 
                     if current_station_info and next_station_info:
+                        # Append current station details to the route
                         route.append({
                             'name': current_station_info['name'],
                             'line': current_station_info['line'],
+                            'latitude': current_station_info['latitude'],
+                            'longitude': current_station_info['longitude'],
+                            'opening_date': current_station_info['opening_date'],
+                            'description': current_station_info['description'],
                             'transfer': current_station_info['transfer']
                         })
 
+                        # Calculate travel time and transfer count
                         if current_station_info['line'] == next_station_info['line']:
-                            # 같은 노선에 있는 경우, 호선별 이동 시간 계산
                             travel_time = calculate_travel_time(current_station_info['line'])
                         else:
-                            # 다른 노선으로 환승하는 경우, 환승 시간 추가
                             travel_time = calculate_transfer_time()
                             transfer_count += 1
 
-                        total_time += travel_time  # 이동 시간을 종합 시간에 더하기
+                        total_time += travel_time
                         regular_count += 1 if not current_station_info['transfer'] else 0
                     else:
                         return JsonResponse({'error': f'역 "{current_station}" 또는 "{next_station}"에 대한 정보를 찾을 수 없습니다.'},
                                             status=404)
 
-                # 도착역 추가
+                # Append the destination station details
                 route.append({
                     'name': next_station_info['name'],
                     'line': next_station_info['line'],
+                    'latitude': next_station_info['latitude'],
+                    'longitude': next_station_info['longitude'],
+                    'opening_date': next_station_info['opening_date'],
+                    'description': next_station_info['description'],
                     'transfer': next_station_info['transfer']
                 })
-                print(route)
+
+                # Return the route information with additional details
                 return JsonResponse({
                     'route': route,
-                    'total_time': total_time,  # 종합 시간을 포함
+                    'total_time': total_time,
                     'transfer_count': transfer_count,
                     'regular_count': regular_count
                 })
@@ -279,8 +295,6 @@ def calculate_travel_time(line):
 # 환승 시간 계산
 def calculate_transfer_time():
     return transfer_time  # 환승 시간은 고정 5분 (예시)
-
-
 
 # 두 지점 간의 거리를 계산하는 함수 (Haversine 공식을 사용)
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -638,3 +652,105 @@ def display_csv(request):
 def kakaomap(request):
     return render(request, 'kakao.html', {'stations': load_stations_from_db()})
 
+# def load_stations_from_db():
+#     global stations_cache
+#     if stations_cache is None:
+#         stations = []
+#         station_map = defaultdict(list)
+#         transfer_map = defaultdict(list)
+#
+#         # Retrieve all station records from the database
+#         for station in Station.objects.all():
+#             # 소수점 넷째 자리에서 버림하여 위도와 경도 저장
+#             station_info = {
+#                 'name': station.name,
+#                 'line': station.line,
+#                 'latitude': int(station.latitude * 10000) / 10000,
+#                 'longitude': int(station.longitude * 10000) / 10000,
+#                 'sort_order': station.sort_order,
+#                 'is_transfer': station.is_transfer,  # DB의 is_transfer 값을 사용
+#             }
+#             # (이름, 정수부 위도, 정수부 경도)를 키로 transfer_map에 추가 (환승 확인용)
+#             transfer_key = (station_info['name'], int(station.latitude), int(station.longitude))
+#             transfer_map[transfer_key].append(station_info)
+#
+#             # 소수점 이하 포함한 위치 정보를 기준으로 station_map에 추가 (캐시 저장용)
+#             station_map[(station_info['name'], station_info['latitude'], station_info['longitude'])].append(
+#                 station_info
+#             )
+#
+#         # 환승 여부 설정
+#         for (station_name, latitude, longitude), station_list in station_map.items():
+#             # transfer_map을 참조하여 환승 여부 설정
+#             transfer_key = (station_name, int(latitude), int(longitude))
+#             is_transfer = len(transfer_map[transfer_key]) > 1 and all(
+#                 st['is_transfer'] for st in transfer_map[transfer_key]
+#             )
+#
+#             # station_map의 정보에 환승 여부를 반영
+#             for station in station_list:
+#                 station['transfer'] = is_transfer
+#
+#             stations.extend(station_list)
+#
+#         # Cache the results
+#         stations_cache = stations
+#         print(stations_cache)
+#     return stations_cache
+#
+#
+# # Function to create an optimized graph using data from the database
+# def create_optimized_graph():
+#     global graph_cache
+#     if graph_cache is None:
+#         # Initialize an undirected graph
+#         G = nx.Graph()
+#
+#         try:
+#             # Retrieve all station records from the database
+#             stations = Station.objects.all()
+#             # Dictionary to group stations by line and name
+#             stations_by_line = defaultdict(list)
+#             stations_by_name = defaultdict(list)
+#
+#             # Populate the stations_by_line and stations_by_name dictionaries
+#             for station in stations:
+#                 stations_by_line[station.line].append(station)
+#                 stations_by_name[station.name].append(station)
+#
+#             # 1. Connect adjacent stations on the same line with weighted edges
+#             for line, line_stations in stations_by_line.items():
+#                 # Sort by 'sort_order' to ensure adjacency
+#                 line_stations.sort(key=lambda x: x.sort_order)
+#                 travel_time = line_travel_times.get(str(line), 2.0)  # Default travel time of 2 minutes
+#
+#                 for i in range(len(line_stations) - 1):
+#                     # Connect consecutive stations on the same line
+#                     G.add_edge(
+#                         f"({line}){line_stations[i].name}",
+#                         f"({line}){line_stations[i + 1].name}",
+#                         weight=travel_time  # Apply travel time by line
+#                     )
+#
+#             # 2. Connect stations with the same name on different lines (transfer stations)
+#             for station_name, matching_stations in stations_by_name.items():
+#                 if len(matching_stations) > 1:
+#                     for i in range(len(matching_stations) - 1):
+#                         for j in range(i + 1, len(matching_stations)):
+#                             # Add an edge between stations on different lines with the same name
+#                             G.add_edge(
+#                                 f"({matching_stations[i].line}){matching_stations[i].name}",
+#                                 f"({matching_stations[j].line}){matching_stations[j].name}",
+#                                 weight=transfer_time  # Apply transfer time
+#                             )
+#
+#             # Cache the generated graph
+#             graph_cache = G
+#         except Exception as e:
+#             print(f"An error occurred while creating the graph: {e}")
+#             return None
+#
+#     return graph_cache
+#
+#
+#
