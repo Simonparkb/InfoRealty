@@ -33,29 +33,6 @@
             height: 800px;
         }
         .route-info-details {
-            max-height: 600px; /* Adjust the height as needed */
-            overflow-y: auto; /* Enable vertical scrolling within this section */
-            margin-top: 10px;
-            border-top: 1px solid #555;
-        }
-
-        .route-info-details .station-detail {
-            padding: 10px 0;
-            border-bottom: 1px solid #555;
-        }
-
-        .route-info-details .station-detail:last-child {
-            border-bottom: none;
-        }
-        .summary-box {
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #e0e0e0;
-            width: 100%;
-        }
-
-        .route-info-details {
             max-height: 400px; /* Adjust the height as needed */
             overflow-y: scroll;
             margin-top: 10px;
@@ -76,6 +53,36 @@
         .route-info-details .station-detail:last-child {
             border-bottom: none;
         }
+        .summary-box {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #e0e0e0;
+            width: 100%;
+        }
+
+        .route-info-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%; /* Full width of .info-container */
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .route-info-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .route-info-container::-webkit-scrollbar-thumb {
+            background-color: #4ea8de;
+        }
+
         /* Station bubble */
         .station-info {
             display: flex;
