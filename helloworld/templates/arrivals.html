@@ -217,6 +217,18 @@
         .button-item:hover {
             background-color: #555;
         }
+
+        /* 고정된 푸터 */
+    .footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+        background-color: #1e1e1e;
+        color: #888;
+        font-size: 0.9rem;
+    }
 </style>
         <link rel="stylesheet" href="styles.min.css">
 </head>
@@ -251,6 +263,10 @@
 <!--         onclick="closeDaumPostcode()" alt="닫기 버튼">-->
 </div>
 <!-- Circular button in the bottom-right corner -->
+<!-- 페이지 하단 카피라이트 -->
+<footer class="footer">
+    © 2024 goodveer. All rights reserved.
+</footer>
 
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6c266115501847fb26941efd997a1268&libraries=services"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" async defer></script>
