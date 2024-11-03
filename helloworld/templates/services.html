@@ -426,8 +426,7 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                         })
                         .map(station => `
                             <div class="station-detail">
-                                <strong>${station.name} (${station.line})</strong><br>
-                                개통(예정)일: ${station.opening_date || 'N/A'}<br>
+                                <strong>${station.name} (${station.line})</strong> 개통(예정)일: ${station.opening_date || 'N/A'}<br>
                                 상세정보: ${station.description || 'No description available'}<br>
                             </div>
                         `).join('')}
