@@ -232,9 +232,14 @@
     <div class="info-box">
         <div id="shortestRoute" class="route-info"></div>
     </div>
+
+    <!-- Share Button -->
+    <button id="shareButton" class="share-button">공유하기</button>
 </div>
 
+
 <script>
+
 const departureData = JSON.parse(localStorage.getItem('departureData'));
 const destinationData = JSON.parse(localStorage.getItem('destinationData'));
 
@@ -420,6 +425,11 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
         console.error('Error fetching the shortest route:', error);
     }
 }
+
+// Add functionality to share button
+document.getElementById('shareButton').addEventListener('click', function() {
+    alert('경로를 공유합니다!'); // Replace with actual share functionality
+});
 
 function getCSRFToken() {
     let csrfToken = null;
