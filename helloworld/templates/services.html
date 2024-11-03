@@ -32,51 +32,24 @@
             box-sizing: border-box;
             height: 800px;
         }
-.info-box {
-    flex-grow: 1; /* Makes the main content take up available space */
-}
+        .route-info-details {
+            max-height: 400px; /* Adjust the height as needed */
+            overflow-y: scroll;
+            margin-top: 10px;
+            border-top: 1px solid #555;
+            scrollbar-width: none; /* For Firefox */
+        }
 
-.route-info-details {
-    max-height: 200px; /* Adjust height as needed */
-    overflow-y: auto; /* Make scrollable if content overflows */
-    margin-top: 10px;
-    border-top: 1px solid #555; /* Line to separate */
-}
+        /* Hide scrollbar for Webkit browsers (Chrome, Safari) */
+        .route-info-details::-webkit-scrollbar {
+            display: none;
+        }
 
-/* Hide scrollbar for a cleaner look */
-.route-info-details::-webkit-scrollbar {
-    display: none;
-}
-.route-info-details {
-    scrollbar-width: none;
-}
+        .route-info-details .station-detail {
+            padding: 10px 0;
+            border-bottom: 1px solid #555;
+        }
 
-/* Share Button Styling */
-.share-button {
-    width: 100%;
-    padding: 12px 0;
-    background-color: #3a86ff;
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    text-align: center;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 20px;
-}
-
-.share-button:hover {
-    background-color: #265ecd;
-    transform: translateY(-2px);
-}
-
-.share-button:active {
-    background-color: #1e4fa3;
-    transform: translateY(0);
-}
         .route-info-details .station-detail:last-child {
             border-bottom: none;
         }
@@ -247,6 +220,31 @@
                 height: 6px;
             }
         }
+    .share-button {
+        width: 100%; /* Full width within the container */
+        padding: 12px 0;
+        margin-top: 20px;
+        background-color: #3a86ff; /* Modern, vibrant blue color */
+        color: #ffffff;
+        font-size: 18px;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-align: center;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .share-button:hover {
+        background-color: #265ecd; /* Slightly darker blue on hover */
+        transform: translateY(-2px); /* Subtle lift effect on hover */
+    }
+
+    .share-button:active {
+        background-color: #1e4fa3; /* Darker shade for active state */
+        transform: translateY(0); /* Reset transform on click */
+    }
     </style>
 </head>
 <body>
@@ -260,14 +258,10 @@
         <div id="shortestRoute" class="route-info"></div>
     </div>
 
-    <!-- Route Info Details Section at the Bottom -->
-    <div class="route-info-details">
-        <!-- Station details will go here -->
-    </div>
-
-    <!-- Share Button at the very bottom -->
+    <!-- Share Button -->
     <button id="shareButton" class="share-button">공유하기</button>
 </div>
+
 
 <script>
 
