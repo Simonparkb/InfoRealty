@@ -5,86 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>우리동네 이렇게 바뀌었어요</title>
 <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #1e1e1e; /* Dark mode background */
-            color: #e0e0e0; /* Light text color */
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-
-    .search-container {
-        width: 100%;
-        max-width: 600px;
-        background-color: #2b2b2b; /* 다크 모드 카드 배경 */
-        padding: 15px 20px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 어두운 그림자 */
-        border-radius: 50px;
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #1e1e1e; /* Dark mode background */
+        color: #e0e0e0; /* Light text color */
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        margin-top: 10%;
+        justify-content: center; /* 중앙 정렬 */
+        align-items: center;
+        height: 100vh; /* 화면 높이에 맞춤 */
+        margin: 0;
+        overflow: hidden; /* 스크롤 제거 */
+        padding: 0; /* 패딩 제거 */
     }
+
+    .search-container {
+        position: relative;
+        width: 90%;
+        max-width: 800px;
+        background-color: #2b2b2b; /* 다크 모드 카드 배경 */
+        padding: 8px 16px; /* 줄어든 패딩 */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 어두운 그림자 */
+        border-radius: 30px; /* 둥근 모서리 */
+        display: flex;
+        align-items: center;
+    }
+
 
     #nearestStation {
-        width: 100%;
+        width: 300%;
         max-width: 700px;
         background-color: #2b2b2b;
+        font-size: 0.8rem;
     }
 
-    @media (max-width: 768px) {
-        body {
-            padding: 0 15px;
-        }
 
-        .search-container {
-            padding: 15px 20px;
-        }
-    }
 
     .input-group {
         display: flex;
-        width: calc(100% - 30px);
-        gap: 10px;
+        width: 100%;
         align-items: center;
-        border-radius: 50px;
-        padding: 10px 0px; /* 배경 제거 */
+        padding: 0;
     }
 
     input[type="text"], button {
-        padding: 10px;
-        font-size: 1rem;
+        padding: 5px;
+        font-size: 0.8rem;
         border-radius: 50px;
     }
 
     input[type="text"] {
         flex: 1;
+        padding: 5px;
+        font-size: 0.8rem;
         border: none;
-        background-color: transparent; /* 배경 투명 */
-        color: #e0e0e0; /* 밝은 텍스트 색상 */
+        background-color: transparent;
+        color: #e0e0e0;
         outline: none;
-        font-size: 1rem;
     }
 
     input[type="text"]::placeholder {
         color: #888; /* 다크 모드에서 플레이스홀더 색상 */
     }
 
+    #nearestStation {
+        width: 300%;
+        max-width: 700px;
+        background-color: #2b2b2b;
+        font-size: 0.8rem;
+    }
     button {
         background-color: #444; /* 다크 모드 버튼 색상 */
         color: #e0e0e0;
         border: none;
         cursor: pointer;
-        padding: 0 20px;
+        padding: 8px 20px;
         transition: background-color 0.3s;
-        border-radius: 50px;
+        border-radius: 30px;
     }
 
     button:hover {
@@ -139,7 +136,7 @@
         transform: scale(1.1); /* 버튼 호버 시 확대 */
     }
 
-    #result, #nearestStation {
+    #result {
         margin-top: 10px;
         font-size: 1.1rem;
         color: #e0e0e0; /* 다크 모드 텍스트 색상 */
@@ -176,7 +173,15 @@
         float: right;
         margin-left: 10px;
     }
+    @media (max-width: 768px) {
+        body {
+            padding: 0 15px;
+        }
 
+        .search-container {
+            padding: 15px 20px;
+        }
+    }
     .tobe-label {
         display: inline-block;
         background-color: #ff9800;
