@@ -391,8 +391,8 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                     <h3>${routeType} (소요 시간: 약 ${routeResult.total_time.toFixed(0)}분) ${labelHtml}<button class="detail-button">자세히 보기</button></h3>
                     ${routeContainer}
                     <br>
-
-                  <div class="route-info-details">
+                    <h3>새소식</h3>
+                    <div class="route-info-details">
                     ${routeResult.route
                         .filter(station => {
                             const openingYear = new Date(station.opening_date).getFullYear();
@@ -405,7 +405,7 @@ async function fetchRouteSequentially(routeData, routeType, excludeLines, status
                                 Description: ${station.description || 'No description available'}<br>
                             </div>
                         `).join('')}
-                </div>
+                     </div>
                 `;
 
                 card.querySelector('.detail-button').addEventListener('click', function() {
