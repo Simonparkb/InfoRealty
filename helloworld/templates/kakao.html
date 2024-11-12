@@ -72,7 +72,6 @@
             transform: scale(0.95);
         }
 
-        /* 하단 메뉴 스타일 */
         #map_wrap_bottom {
             position: fixed;
             bottom: 5px;
@@ -84,9 +83,7 @@
             z-index: 3;
             border-radius: 10px;
             overflow-y: auto;
-            display: none;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: opacity 0.1s ease;
         }
 
         /* 닫기 버튼 스타일 */
@@ -429,10 +426,16 @@
 
             switch(line) {
                 case 1: return "{% static 'image/Seoul_Metro_Line_1.png' %}";
+                case '1_인천방면': return "{% static 'image/Seoul_Metro_Line_1.png' %}";
+                case '1_신창방면': return "{% static 'image/Seoul_Metro_Line_1.png' %}";
+                case '1_광명방면': return "{% static 'image/Seoul_Metro_Line_1.png' %}";
+                case '1_서동탄방면': return "{% static 'image/Seoul_Metro_Line_1.png' %}";
                 case 2: return "{% static 'image/Seoul_Metro_Line_2.png' %}";
                 case 3: return "{% static 'image/Seoul_Metro_Line_3.png' %}";
                 case 4: return "{% static 'image/Seoul_Metro_Line_4.png' %}";
                 case 5: return "{% static 'image/Seoul_Metro_Line_5.png' %}";
+                case '5_마천방면' : return "{% static 'image/Seoul_Metro_Line_5.png' %}";
+                case '5_하남검단산방면' : return "{% static 'image/Seoul_Metro_Line_5.png' %}";
                 case 6: return "{% static 'image/Seoul_Metro_Line_6.png' %}";
                 case 7: return "{% static 'image/Seoul_Metro_Line_7.png' %}";
                 case 8: return "{% static 'image/Seoul_Metro_Line_8.png' %}";

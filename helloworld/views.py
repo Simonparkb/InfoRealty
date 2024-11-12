@@ -27,8 +27,14 @@ from .models import Station
 # Local app imports
 from .models import Station  # Importing only Station from .models
 
-
 logger = logging.getLogger(__name__)
+
+def log_activity(user, action):
+    ActivityLog.objects.create(user=user, action=action)
+
+
+def under_construction(request):
+    return render(request, 'underconstruction.html')
 
 def departures(request):
     return render(request, 'departures.html')
@@ -39,8 +45,13 @@ def arrivals(request):
 def services(request):
     return render(request, 'services.html')
 
-def log_activity(user, action):
-    ActivityLog.objects.create(user=user, action=action)
+def station_map(request):
+    # stations = Station.objects.all()  # 모든 역 데이터 가져오기
+    return render(request, 'kakao.html', {'stations': load_stations_from_db()})
+
+
+
+
 
 # 전역 변수로 캐시할 데이터
 stations_cache = None
@@ -62,9 +73,8 @@ line_travel_times = {
 }
 
 
-def station_map(request):
-    # stations = Station.objects.all()  # 모든 역 데이터 가져오기
-    return render(request, 'kakao.html', {'stations': load_stations_from_db()})
+
+
 
 def load_stations_from_db():
     global stations_cache
@@ -81,7 +91,6 @@ def load_stations_from_db():
                 'longitude': int(station.longitude * 10000) / 10000,
                 'sort_order': station.sort_order,
                 'is_transfer': station.is_transfer,
-                'branch_ids': station.branch_ids,
                 'is_branch_point': station.is_branch_point,
                 'opening_date': station.opening_date,  # Add opening date
                 'description': station.description,  # Add description
@@ -100,10 +109,7 @@ def load_stations_from_db():
 
             for station in station_list:
                 station['transfer'] = is_transfer
-                if station['is_branch_point'] and station['branch_ids']:
-                    station['branch_point'] = True
-                else:
-                    station['branch_point'] = False
+                station['branch_point'] = station['is_branch_point']
 
             stations.extend(station_list)
 
@@ -145,7 +151,7 @@ def create_optimized_graph():
                                   f"{matching_stations[j].name} ({matching_stations[j].line}) "
                                   f"with weight {transfer_time}")
 
-            # 2. 같은 노선에서 동일 branch_id의 역들을 `sort_order` 순서로 인접 연결
+            # 2. 같은 노선에서 sort_order 순서로 인접 연결
             for line, line_stations in stations_by_line.items():
                 line_stations.sort(key=lambda x: x.sort_order)
 
@@ -156,12 +162,12 @@ def create_optimized_graph():
                     # 기본 가중치 설정
                     weight = default_travel_time
 
-                    # `is_transfer`가 True인 경우 가중치를 줄여서 환승을 더 선호하도록 설정
+                    # is_transfer가 True인 경우 가중치를 줄여서 환승을 더 선호하도록 설정
                     if current_station.is_transfer or next_station.is_transfer:
                         weight *= 0.8  # 환승 가능한 역에 대한 가중치를 낮춰 더 선호하게 함
-                        print(f"Transfer available between {current_station.name} and {next_station.name} with weight {weight}")
+                        # print(f"Transfer available between {current_station.name} and {next_station.name} with weight {weight}")
 
-                    # `sort_order` 차이가 작을수록 가중치를 줄여 인접성을 선호
+                    # sort_order 차이가 작을수록 가중치를 줄여 인접성을 선호
                     sort_order_diff = abs(current_station.sort_order - next_station.sort_order)
                     weight -= sort_order_diff * 0.1  # 인접 역 우선
 
@@ -177,13 +183,12 @@ def create_optimized_graph():
                           f"with weight {weight}")
 
             graph_cache = G
-            # print("Generated graph cache:", G.edges(data=True))
+            print("Generated graph cache:", G.edges(data=True))
         except Exception as e:
             print(f"An error occurred while creating the graph: {e}")
             return None
 
     return graph_cache
-
 
 @csrf_exempt
 def find_shortest_route(request):

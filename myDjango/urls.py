@@ -18,6 +18,6 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path('justdoit/', admin.site.urls),
+    path('staff_only/', admin.site.urls),
     path('', include('helloworld.urls')),
 ]
